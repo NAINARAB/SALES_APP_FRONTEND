@@ -1,38 +1,78 @@
-.App {
-  text-align: center;
+.fa-20 {
+  font-size: 20px !important;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.fa-19 {
+  font-size: 19px !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.fa-18 {
+  font-size: 18px !important;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.fa-17 {
+  font-size: 17px !important;
 }
 
-.App-link {
-  color: #61dafb;
+.fa-16 {
+  font-size: 16px !important;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.fa-15 {
+  font-size: 15px !important;
+}
+
+.fa-14 {
+  font-size: 14px !important;
+}
+
+.fa-13 {
+  font-size: 13px !important;
+}
+
+.fa-12 {
+  font-size: 12px !important;
+}
+
+.fa-11 {
+  font-size: 11px !important;
+}
+
+.fa-10 {
+  font-size: 10px !important;
+}
+
+.fa-in {
+  font-size: inherit !important;
+}
+
+.del-red {
+  color: #FF6865;
+}
+
+.cus-inpt {
+  width: 100%;
+  border: 1px solid #bebdbd;
+  padding: 10px;
+  border-radius: 4px;
+  outline-color: #0d6efd;
+}
+
+.icon-btn {
+  border: none;
+  border-radius: 50%;
+  font-size: 16px;
+}
+
+.cus-check {
+  border: 1px solid #bebdbd;
+  border-radius: 10px;
+  height: 20px;
+  width: 20px;
+}
+
+
+.sticky-area {
+  position: sticky;
+  top: 0;
 }
