@@ -26,6 +26,7 @@ function Login({ setLogin, setLoading, toast }) {
             })
 
             const response = await request.json();
+            console.log(response)
 
             if (response.success) {
                 localStorage.setItem('user', JSON.stringify(response?.data[0]));
