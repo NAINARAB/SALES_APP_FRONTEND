@@ -7,8 +7,7 @@ import "./layout.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { MyContext } from "../contextApi";
-
-const api = process.env.REACT_APP_BACKEND
+import { api } from "../../host";
 
 const setLoclStoreage = (pageId, menu) => {
     localStorage.setItem('CurrentPage', JSON.stringify({ id: pageId, type: menu }));

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './login.css';
 import CryptoJS from 'crypto-js';
+import { api } from '../../host'
 
 
 function Login({ setLogin, setLoading, toast }) {
@@ -14,7 +15,7 @@ function Login({ setLogin, setLoading, toast }) {
         setLoading(true)
         try {
             const passHash = CryptoJS.AES.encrypt(userPass.Password, 'ly4@&gr$vnh905RyB>?%#@-(KSMT').toString();
-            const request = await fetch(`${process.env.REACT_APP_BACKEND}api/login`, {
+            const request = await fetch(`${api}api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -26,7 +27,6 @@ function Login({ setLogin, setLoading, toast }) {
             })
 
             const response = await request.json();
-            console.log(response)
 
             if (response.success) {
                 localStorage.setItem('user', JSON.stringify(response?.data[0]));

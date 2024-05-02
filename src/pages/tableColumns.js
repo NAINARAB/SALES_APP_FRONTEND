@@ -25,6 +25,27 @@ const customSelectStyles2 = {
     }),
 };
 
+const customTableStyles = {
+    table: {
+        style: {
+            width: 'auto',
+            backgroundColor: 'transparent',
+        }
+    },
+    rows: {
+        style: {
+            backgroundColor: 'transparent',
+        },
+    },
+    headCells: {
+        style: {
+            backgroundColor: 'rgb(15, 11, 42)',
+            color: 'white',
+            fontSize: '14px',
+        },
+    },
+};
+
 const MainMenu = [
     {
         id: 1,
@@ -66,5 +87,6 @@ const MainMenu = [
 export {
     MainMenu,
     customSelectStyles,
-    customSelectStyles2
+    customSelectStyles2,
+    customTableStyles
 }

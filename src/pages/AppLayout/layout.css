@@ -130,15 +130,16 @@ body {
 }
 
 .content-body {
+    box-sizing: border-box;
     height: 92vh;
     width: 100%;
     overflow-y: scroll;
-    padding: 13.5px 12.3px 13.5px 13.5px;
-    padding-bottom: 300px;
+    padding: 13.5px 0px 13.5px 13.5px;
+    /* padding-bottom: 300px; */
 }
 
 .content-body::-webkit-scrollbar {
-    display: unset !important;
+    display: none !important;
 }
 
 .content-body::-webkit-scrollbar-thumb {

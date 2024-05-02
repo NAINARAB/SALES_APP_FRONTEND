@@ -4,6 +4,7 @@ import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, Di
 import { Delete, Edit } from "@mui/icons-material";
 import CryptoJS from 'crypto-js';
 import '../common.css'
+import { api } from "../../host";
 
 const initialState = {
   Id: "",
@@ -28,7 +29,9 @@ const Users = (props) => {
   const [usetTypeDropDown, setUsetTypeDropDown] = useState([]);
   const [branchDropDown, setBranchDropDown] = useState([]);
 
-  const api = process.env.REACT_APP_BACKEND;
+  const [filterInput, setFilterInput] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
+
   const toast = (one, two) => console.log('one two', one, two)
 
   useEffect(() => {
@@ -182,11 +185,24 @@ const Users = (props) => {
       })
   };
 
+  function handleSearchChange(event) {
+    const term = event.target.value;
+    setFilterInput(term);
+    const filteredResults = usersData.filter(item => {
+      return Object.values(item).some(value =>
+        String(value).toLowerCase().includes(term.toLowerCase())
+      );
+    });
+
+    setFilteredData(filteredResults);
+  }
+
   return (
     <Fragment>
 
       {!screen ? (
         <div className="card">
+
           <div className="card-header bg-white fw-bold d-flex align-items-center justify-content-between">
             Users
             <div className="text-end">
@@ -198,7 +214,21 @@ const Users = (props) => {
               </Button>
             </div>
           </div>
+
           <div className="card-body" style={{ maxHeight: "78vh", overflowY: 'scroll' }} >
+
+            <div className="d-flex justify-content-end">
+              <div className="col-md-4 pb-2">
+                <input
+                  type="search"
+                  value={filterInput}
+                  className="cus-inpt"
+                  placeholder="Search"
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+
             <div className="table-responsive">
               <Table className="">
                 <thead>
@@ -213,7 +243,7 @@ const Users = (props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {usersData.map((obj, index) => (
+                  {(filteredData && filteredData.length ? filteredData : filterInput === '' ? usersData : []).map((obj, index) => (
                     <tr key={index}>
                       <td className="fa-14">{obj.UserId}</td>
                       <td className="fa-14">{obj.Name}</td>

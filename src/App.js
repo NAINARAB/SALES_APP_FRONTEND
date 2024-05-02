@@ -8,6 +8,7 @@ import LoaderComp from "./pages/loadingScreen/loading";
 import { routes } from "./AppRoutes";
 import { ContextDataProvider } from './pages/contextApi';
 import MainComponent from "./pages/AppLayout/layout";
+import { api } from "./host";
 
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
     const Auth = queryParams.get('Auth') || parsed?.Autheticate_Id;
 
     if (Auth) {
-      fetch(`${process.env.REACT_APP_BACKEND}api/userAuth?Auth=${Auth}`, {
+      fetch(`${api}api/userAuth?Auth=${Auth}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
