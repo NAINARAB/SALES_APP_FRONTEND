@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Card, Box, CardContent, CardMedia, Tooltip, ImageOutlined, Button, Tab } from "@mui/material";
-import { Delete, Edit, Store, Person, Call, LocationOn, ProductionQuantityLimits } from "@mui/icons-material";
+import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Box, CardContent, CardMedia, Tooltip, Button, Tab, Paper, Typography } from "@mui/material";
+import { Person, Call, LocationOn, ProductionQuantityLimits, ArrowBack, Edit, Verified } from "@mui/icons-material";
 import '../common.css'
 import Select from "react-select";
 import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
+import { toast } from 'react-toastify';
 
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
@@ -17,25 +18,25 @@ const RetailersMaster = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
     const [retailers, setRetailers] = useState([]);
     const [area, setArea] = useState([]);
-    const [products, setProducts] = useState([]);
     const [filteredData, setFilteredData] = useState([])
-    const [tabValue, setTabValue] = useState('1')
 
-    const [dialog, setDialog] = useState({
-        closingStock: false
-    });
+    const [dialog, setDialog] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+
     const [filters, setFilters] = useState({
         cust: '',
         custGet: 'All Retailer',
         area: '',
         areaGet: 'All Area',
     });
+
     const initialStockValue = {
         Company_Id: storage?.Company_id,
         ST_Date: new Date().toISOString().split('T')[0],
         Retailer_Id: '',
+        Retailer_Name: '',
         Narration: '',
-        Created_by: storage?.Name,
+        Created_by: storage?.UserId,
         Product_Stock_List: []
     }
     const [stockInputValue, setStockInputValue] = useState(initialStockValue)
@@ -59,35 +60,21 @@ const RetailersMaster = () => {
                     setArea(data.data)
                 }
             }).catch(e => console.error(e))
-        fetch(`${api}api/masters/products/grouped`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setProducts(data.data)
-                }
-            }).catch(e => console.error(e))
     }, [])
 
     useEffect(() => {
-        const tempFilteredData = [];
-        if (filters.area) {
-            setFilters(pre => ({ ...pre, cust: '', custGet: 'All Retailer' }))
-            retailers.map(o => {
-                if (Number(o?.Area_Id) === Number(filters.area)) {
-                    tempFilteredData.push(o)
-                }
-            })
-            setFilteredData(tempFilteredData)
-        } else if (filters.cust) {
-            setFilters(pre => ({ ...pre, area: '', areaGet: 'All Area' }))
-            retailers.map(o => {
-                if (Number(o?.Retailer_Id) === Number(filters.cust)) {
-                    tempFilteredData.push(o)
-                }
-            })
-            setFilteredData(tempFilteredData)
-        }
-    }, [filters.area, filters.cust])
+        const tempFilteredData = retailers.filter(o => {
+            if (filters.area) {
+                return Number(o?.Area_Id) === Number(filters.area);
+            }
+            if (filters.cust) {
+                return Number(o?.Retailer_Id) === Number(filters.cust);
+            }
+
+            return true;
+        });
+        setFilteredData(tempFilteredData);
+    }, [filters.area, filters.cust, retailers])
 
     const retailerColumn = [
         {
@@ -119,10 +106,24 @@ const RetailersMaster = () => {
             name: 'Action',
             cell: (row) => (
                 <>
+                    <Tooltip title='Edit Retailer'>
+                        <IconButton size="small" onClick={() => {
+                            setDialog(true);
+                            setIsEdit(true)
+                            setStockInputValue({
+                                ...stockInputValue,
+                                Company_Id: row?.Company_Id,
+                                Retailer_Id: row.Retailer_Id,
+                                Retailer_Name: row?.Retailer_Name,
+                            })
+                        }} >
+                            <Edit />
+                        </IconButton>
+                    </Tooltip>
 
-                    <Tooltip title='Update Closing Stock'>
-                        <IconButton size="small" onClick={() => setDialog({ ...dialog, closingStock: true })} >
-                            <ProductionQuantityLimits />
+                    <Tooltip title='Verify Location'>
+                        <IconButton size="small">
+                            <Verified color='success' />
                         </IconButton>
                     </Tooltip>
 
@@ -176,25 +177,15 @@ const RetailersMaster = () => {
         )
     }
 
+    const closeStockDialog = () => {
+        setDialog(false);
+        setStockInputValue(initialStockValue)
+    }
+
     return (
         <>
 
             <div className="row mb-2">
-
-                <div className="col-md-4 col-sm-6">
-                    <label>Retailer</label>
-                    <Select
-                        value={{ value: filters?.cust, label: filters?.custGet }}
-                        onChange={(e) => setFilters({ ...filters, cust: e.value, custGet: e.label })}
-                        options={[
-                            { value: '', label: 'All Retailer' },
-                            ...retailers.map(obj => ({ value: obj?.Retailer_Id, label: obj.Retailer_Name }))
-                        ]}
-                        styles={customSelectStyles}
-                        isSearchable={true}
-                        placeholder={"Retailer Name"}
-                    />
-                </div>
 
                 <div className="col-md-4 col-sm-6">
                     <label>Area</label>
@@ -203,11 +194,26 @@ const RetailersMaster = () => {
                         onChange={(e) => setFilters({ ...filters, area: e.value, areaGet: e.label })}
                         options={[
                             { value: '', label: 'All Area' },
-                            ...area.map(obj => ({ value: obj?.Area_Id, label: obj.Area_Name }))
+                            ...area.map(obj => ({ value: obj?.Area_Id, label: obj?.Area_Name }))
                         ]}
                         styles={customSelectStyles}
                         isSearchable={true}
                         placeholder={"Area Name"}
+                    />
+                </div>
+
+                <div className="col-md-4 col-sm-6">
+                    <label>Retailer</label>
+                    <Select
+                        value={{ value: filters?.cust, label: filters?.custGet }}
+                        onChange={(e) => setFilters({ ...filters, cust: e.value, custGet: e.label })}
+                        options={[
+                            { value: '', label: 'All Retailer' },
+                            ...retailers.map(obj => ({ value: obj?.Retailer_Id, label: obj?.Retailer_Name }))
+                        ]}
+                        styles={customSelectStyles}
+                        isSearchable={true}
+                        placeholder={"Retailer Name"}
                     />
                 </div>
 
@@ -238,73 +244,24 @@ const RetailersMaster = () => {
             </div>
 
             <Dialog
-                open={dialog?.closingStock}
-                onClose={() => setDialog({ ...dialog, closingStock: false })}
+                open={dialog}
+                onClose={closeStockDialog}
                 fullScreen
             >
-                <DialogTitle>Add Closing Stock</DialogTitle>
+                <DialogTitle>
+                    <IconButton size="small" onClick={closeStockDialog} className="me-2">
+                        <ArrowBack />
+                    </IconButton>
+                    Add Closing Stock For
+                    <span className="ps-1 text-primary">{stockInputValue?.Retailer_Name}</span>
+                </DialogTitle>
                 <DialogContent>
 
-                    <div className="col-xl-3 col-lg-4 col-md-6 col-sm-8 mb-4">
-                        <label>Date</label>
-                        <input
-                            type="date"
-                            value={stockInputValue?.ST_Date ? new Date(stockInputValue?.ST_Date).toISOString().split('T')[0] : ''}
-                            onChange={e => setStockInputValue({ ...stockInputValue, ST_Date: e.target.value })}
-                            className="cus-inpt" required
-                        />
-                    </div>
 
-                    <TabContext value={tabValue}>
-
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <TabList indicatorColor='transparant' onChange={(e, n) => setTabValue(n)} >
-                                {products.map((o, i) => (
-                                    <Tab 
-                                        key={i} 
-                                        sx={String(tabValue) === String(i) ? { backgroundColor: '#c6d7eb' } : {}} 
-                                        label={o?.Pro_Group} 
-                                        value={String(i)} 
-                                    />
-                                ))}
-                            </TabList>
-                        </Box>
-
-                        <TabPanel value="1" sx={{ p: 0 }}>
-                             
-                        </TabPanel>
-
-                        <TabPanel value="2" sx={{ p: 0 }}> 
-
-                        </TabPanel>
-                    </TabContext>
-
-                    {/* <div className="table-responsive">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th className="border fa-13">S No</th>
-                                    <th className="border fa-13">Product</th>
-                                    <th className="border fa-13">Quantity</th>
-                                    <th className="border fa-13">Unit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {stockInputValue?.Product_Stock_List?.map((o, i) => {
-                                    <tr>
-                                        <td className="border fa-13">{i + 1}</td>
-                                        <td className="border fa-13">{o?.Product_Name}</td>
-                                        <td className="border fa-13">{o?.Qty}</td>
-                                        <td className="border fa-13">{o?.Unit}</td>
-                                    </tr>
-                                })}
-                            </tbody>
-                        </table>
-                    </div> */}
                 </DialogContent>
-                <DialogActions>
-                    <Button type="button" onClick={() => setDialog({ ...dialog, closingStock: false })}>cancel</Button>
-                    <Button type="button" onClick={() => setDialog({ ...dialog, closingStock: false })}>confirm</Button>
+                <DialogActions className="bg-light">
+                    <Button onClick={closeStockDialog}>cancel</Button>
+                    <Button variant='contained' color='success' onClick={() => {}}>confirm</Button>
                 </DialogActions>
             </Dialog>
         </>

@@ -233,7 +233,7 @@ const Users = (props) => {
               <Table className="">
                 <thead>
                   <tr>
-                    <th className="fa-14">ID</th>
+                    <th className="fa-14">Sno</th>
                     <th className="fa-14">Name</th>
                     <th className="fa-14">User Type</th>
                     <th className="fa-14">Mobile</th>
@@ -245,7 +245,7 @@ const Users = (props) => {
                 <tbody>
                   {(filteredData && filteredData.length ? filteredData : filterInput === '' ? usersData : []).map((obj, index) => (
                     <tr key={index}>
-                      <td className="fa-14">{obj.UserId}</td>
+                      <td className="fa-14">{index + 1}</td>
                       <td className="fa-14">{obj.Name}</td>
                       <td className="fa-14">{obj.UserType}</td>
                       <td className="fa-14">{obj.UserName}</td>

@@ -1,6 +1,8 @@
 import SaleOrderConvert from "./pages/salesOrderConvertion/saleOrdersModification";
 import Users from "./pages/Masters/users";
 import RetailersMaster from "./pages/Masters/retailers";
+import ProductsMaster from "./pages/Masters/products";
+import RetailerClosingStock from "./pages/Transactions/retailerClosingStock";
 
 export const routes = [
     {
@@ -14,5 +16,13 @@ export const routes = [
     {
         path: '/masters/retailers',
         comp: <RetailersMaster />
-    }
+    },
+    {
+        path: '/masters/products',
+        comp: <ProductsMaster />
+    },
+    {
+        path: '/transaction/retailerClosingStock',
+        comp: <RetailerClosingStock />
+    },
 ]
