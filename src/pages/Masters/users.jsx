@@ -215,63 +215,61 @@ const Users = (props) => {
             </div>
           </div>
 
-          <div className="card-body" style={{ maxHeight: "78vh", overflowY: 'scroll' }} >
 
-            <div className="d-flex justify-content-end">
-              <div className="col-md-4 pb-2">
-                <input
-                  type="search"
-                  value={filterInput}
-                  className="cus-inpt"
-                  placeholder="Search"
-                  onChange={handleSearchChange}
-                />
-              </div>
+          <div className="d-flex justify-content-end">
+            <div className="col-md-4 p-2 ">
+              <input
+                type="search"
+                value={filterInput}
+                className="cus-inpt"
+                placeholder="Search"
+                onChange={handleSearchChange}
+              />
             </div>
+          </div>
 
-            <div className="table-responsive">
-              <Table className="">
-                <thead>
-                  <tr>
-                    <th className="fa-14">Sno</th>
-                    <th className="fa-14">Name</th>
-                    <th className="fa-14">User Type</th>
-                    <th className="fa-14">Mobile</th>
-                    <th className="fa-14">Company</th>
-                    <th className="fa-14">Branch</th>
-                    <th className="fa-14">Action</th>
+          <div className="table-responsive">
+            <Table className="">
+              <thead>
+                <tr>
+                  <th className="border fa-14">Sno</th>
+                  <th className="border fa-14">Name</th>
+                  <th className="border fa-14">User Type</th>
+                  <th className="border fa-14">Mobile</th>
+                  <th className="border fa-14">Company</th>
+                  <th className="border fa-14">Branch</th>
+                  <th className="border fa-14">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(filteredData && filteredData.length ? filteredData : filterInput === '' ? usersData : []).map((obj, index) => (
+                  <tr key={index}>
+                    <td className="border fa-14">{index + 1}</td>
+                    <td className="fa-14">{obj.Name}</td>
+                    <td className="fa-14">{obj.UserType}</td>
+                    <td className="fa-14">{obj.UserName}</td>
+                    <td className="fa-14">{obj.Company_Name}</td>
+                    <td className="fa-14">{obj.BranchName}</td>
+                    <td className="fa-12" style={{ minWidth: "80px" }}>
+                      <IconButton
+                        onClick={() => { editRow(obj) }}
+                        size="small"
+                      >
+                        <Edit className="fa-in" />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          deleteRow(obj, true);
+                        }}
+                        size="small"
+                      >
+                        <Delete className="fa-in del-red" />
+                      </IconButton>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {(filteredData && filteredData.length ? filteredData : filterInput === '' ? usersData : []).map((obj, index) => (
-                    <tr key={index}>
-                      <td className="fa-14">{index + 1}</td>
-                      <td className="fa-14">{obj.Name}</td>
-                      <td className="fa-14">{obj.UserType}</td>
-                      <td className="fa-14">{obj.UserName}</td>
-                      <td className="fa-14">{obj.Company_Name}</td>
-                      <td className="fa-14">{obj.BranchName}</td>
-                      <td className="fa-12" style={{ minWidth: "80px" }}>
-                        <IconButton
-                          onClick={() => { editRow(obj) }}
-                          size="small"
-                        >
-                          <Edit className="fa-in" />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => {
-                            deleteRow(obj, true);
-                          }}
-                          size="small"
-                        >
-                          <Delete className="fa-in del-red" />
-                        </IconButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
+                ))}
+              </tbody>
+            </Table>
           </div>
         </div>
       ) : (

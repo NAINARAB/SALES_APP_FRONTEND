@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Box, CardContent, CardMedia, Tooltip, Button, Tab, Paper, Typography } from "@mui/material";
-import { Person, Call, LocationOn, ProductionQuantityLimits, ArrowBack, Edit, Verified } from "@mui/icons-material";
+import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, CardContent, CardMedia, Tooltip, Button } from "@mui/material";
+import { Person, Call, LocationOn, ArrowBack, Edit, Verified } from "@mui/icons-material";
 import '../common.css'
 import Select from "react-select";
 import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
-import { toast } from 'react-toastify';
-
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+// import { toast } from 'react-toastify';
 
 
 const RetailersMaster = () => {
@@ -73,6 +69,9 @@ const RetailersMaster = () => {
 
             return true;
         });
+        if (filters.area) {
+            setFilters(pre => ({ ...pre, cust: '', custGet: 'All Retailer' }))
+        }
         setFilteredData(tempFilteredData);
     }, [filters.area, filters.cust, retailers])
 
@@ -214,34 +213,31 @@ const RetailersMaster = () => {
                         styles={customSelectStyles}
                         isSearchable={true}
                         placeholder={"Retailer Name"}
+                        isDisabled={filters.area}
                     />
                 </div>
 
             </div>
 
-            <div style={{ maxHeight: '80vh', overflowY: 'scroll' }}>
-
-                <Card sx={{ mb: 1 }} >
-                    <DataTable
-                        columns={retailerColumn}
-                        data={
-                            filteredData.length > 0
-                                ? filteredData
-                                : (filters?.area === '' && filters?.cust === '')
-                                    ? retailers
-                                    : []
-                        }
-                        pagination
-                        highlightOnHover={true}
-                        fixedHeader={true}
-                        fixedHeaderScrollHeight={'100vh'}
-                        customStyles={customTableStyles}
-                        expandableRows
-                        expandableRowsComponent={RetailerDetails}
-                    />
-                </Card>
-
-            </div>
+            <Card sx={{ mb: 1 }} >
+                <DataTable
+                    columns={retailerColumn}
+                    data={
+                        filteredData.length > 0
+                            ? filteredData
+                            : (filters?.area === '' && filters?.cust === '')
+                                ? retailers
+                                : []
+                    }
+                    pagination
+                    highlightOnHover={true}
+                    fixedHeader={true}
+                    fixedHeaderScrollHeight={'100vh'}
+                    customStyles={customTableStyles}
+                    expandableRows
+                    expandableRowsComponent={RetailerDetails}
+                />
+            </Card>
 
             <Dialog
                 open={dialog}
@@ -261,7 +257,7 @@ const RetailersMaster = () => {
                 </DialogContent>
                 <DialogActions className="bg-light">
                     <Button onClick={closeStockDialog}>cancel</Button>
-                    <Button variant='contained' color='success' onClick={() => {}}>confirm</Button>
+                    <Button variant='contained' color='success' onClick={() => { }}>confirm</Button>
                 </DialogActions>
             </Dialog>
         </>

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import DataTable from "react-data-table-component";
-import { customTableStyles } from "../tableColumns";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Box, CardContent, CardMedia, Tooltip, Button, Tab, Paper, Typography } from "@mui/material";
-import { Person, Call, LocationOn, ProductionQuantityLimits, ArrowBack } from "@mui/icons-material";
+import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Box, CardContent, CardMedia, Button, Tab, Paper, Collapse } from "@mui/material";
+import { Person, Call, LocationOn, ArrowBack, Queue, Edit, ExpandLess, ExpandMore } from "@mui/icons-material";
 import '../common.css'
 import Select from "react-select";
 import { api } from "../../host";
@@ -12,16 +10,17 @@ import { toast } from 'react-toastify';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-// import ScrollableTabs from '@mui/material/ScrollableTabs';
 
 
 const RetailerClosingStock = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
     const [retailers, setRetailers] = useState([]);
+    const [retailerInfo, setRetailerInfo] = useState({});
     const [products, setProducts] = useState([]);
     const [productClosingStock, setProductClosingStock] = useState([]);
-    const [filteredData, setFilteredData] = useState([])
-    const [tabValue, setTabValue] = useState('1')
+    const [filteredProductClosingStock, setFilteredProductClosingStock] = useState([])
+    const [tabValue, setTabValue] = useState('1');
+    const [reload, setReload] = useState(false);
 
     const [dialog, setDialog] = useState({
         closingStock: false
@@ -29,6 +28,8 @@ const RetailerClosingStock = () => {
     const [filters, setFilters] = useState({
         cust: '',
         custGet: 'All Retailer',
+        Fromdate: new Date(new Date().setDate(new Date().getDate() - 100)).toISOString().split('T')[0],
+        Todate: new Date().toISOString().split('T')[0],
     });
 
     const initialStockValue = {
@@ -38,13 +39,16 @@ const RetailerClosingStock = () => {
         Retailer_Name: '',
         Narration: '',
         Created_by: storage?.UserId,
-        Product_Stock_List: []
+        Product_Stock_List: [],
+        ST_Id: ''
     }
     const [stockInputValue, setStockInputValue] = useState(initialStockValue)
     const [closingStockValues, setClosingStockValues] = useState([]);
+    const [isEdit, setIsEdit] = useState(false);
 
 
     useEffect(() => {
+
         fetch(`${api}api/masters/retailers/dropDown?Company_Id=${storage?.Company_id}`)
             .then(res => res.json())
             .then(data => {
@@ -52,9 +56,7 @@ const RetailerClosingStock = () => {
                     setRetailers(data.data);
                 }
             }).catch(e => console.error(e))
-    }, [])
 
-    useEffect(() => {
         fetch(`${api}api/masters/products/grouped`)
             .then(res => res.json())
             .then(data => {
@@ -62,11 +64,12 @@ const RetailerClosingStock = () => {
                     setProducts(data.data)
                 }
             }).catch(e => console.error(e))
+
     }, [])
 
     useEffect(() => {
         if (stockInputValue?.Retailer_Id) {
-            fetch(`${api}api/masters/retailers/productClosingStock?Retailer_Id=${stockInputValue?.Retailer_Id}`)
+            fetch(`${api}api/masters/retailers/productClosingStock?Retailer_Id=${stockInputValue?.Retailer_Id}&reqDate=${stockInputValue?.ST_Date}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -74,111 +77,70 @@ const RetailerClosingStock = () => {
                     }
                 }).catch(e => console.error(e))
         }
-    }, [stockInputValue?.ST_Date, stockInputValue?.Retailer_Id])
+    }, [stockInputValue?.ST_Date, stockInputValue?.Retailer_Id, reload])
 
     useEffect(() => {
-        const tempFilteredData = retailers.filter(o => {
-            if (filters.cust) {
-                return Number(o?.Retailer_Id) === Number(filters.cust);
-            }
-
-            return true;
-        });
-        setFilteredData(tempFilteredData);
-    }, [filters.cust, retailers])
-
-    const retailerColumn = [
-        {
-            name: 'Ledger',
-            selector: (row) => row?.Retailer_Name,
-            sortable: true,
-        },
-        {
-            name: 'Incharge',
-            selector: (row) => row?.Contact_Person,
-            sortable: true,
-        },
-        {
-            name: 'Mobile',
-            selector: (row) => row.Mobile_No,
-            sortable: true,
-        },
-        {
-            name: 'Area',
-            selector: (row) => row.AreaGet,
-            sortable: true,
-        },
-        {
-            name: 'Modified By',
-            selector: (row) => row.lastModifiedBy,
-            sortable: true,
-        },
-        {
-            name: 'Action',
-            cell: (row) => (
-                <>
-
-                    <Tooltip title='Update Closing Stock'>
-                        <IconButton size="small" onClick={() => {
-                            setDialog({ ...dialog, closingStock: true });
-                            setStockInputValue({
-                                ...stockInputValue,
-                                Company_Id: row?.Company_Id,
-                                Retailer_Id: row.Retailer_Id,
-                                Retailer_Name: row?.Retailer_Name,
-                            })
-                        }} >
-                            <ProductionQuantityLimits />
-                        </IconButton>
-                    </Tooltip>
-
-                    {(row?.Latitude && row.Longitude) && (
-                        <Tooltip title='Open in Google Map'>
-                            <IconButton
-                                size="small"
-                                onClick={() => {
-                                    window.open(`https://www.google.com/maps/search/?api=1&query=${row?.Latitude},${row?.Longitude}`, '_blank');
-                                }}
-                                className="btn btn-info fa-14" color='primary'>
-                                <LocationOn />
-                            </IconButton>
-                        </Tooltip>
-                    )}
-
-                </>
-            )
-        },
-    ];
+        setRetailerInfo({})
+        if (filters?.cust) {
+            fetch(`${api}api/masters/retailers/retailerInfo?Retailer_Id=${filters?.cust}&Fromdate=${filters?.Fromdate}&Todate=${filters?.Todate}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data?.success && data?.data?.length > 0) {
+                        setRetailerInfo(data.data[0])
+                    }
+                }).catch(e => console.error(e))
+        }
+    }, [filters?.cust, filters?.Fromdate, filters?.Todate, reload])
 
     const RetailerDetails = ({ data }) => {
 
         return (
-            <div className="p-3">
-                <Card sx={{ display: 'flex', mb: 1 }} >
+            <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
+                <div className="row">
+                    <div className="col-xl-2 col-md-3 d-flex align-items-center">
+                        <CardMedia
+                            component="img"
+                            sx={{ width: 200, height: 200 }}
+                            image={data?.imageUrl}
+                            alt="retailer_picture"
+                        />
+                    </div>
 
-                    <CardMedia
-                        component="img"
-                        sx={{ width: 350 }}
-                        image={data?.imageUrl}
-                        alt="retailer_picture"
-                    />
+                    <div className="col-xl-10 col-md-9 d-flex flex-column justify-content-center p-2" >
+                        <CardContent>
 
-                    <CardContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
+                            <h6
+                                className="mb-2 fa-18 fw-bold text-primary text-decoration-underline"
+                                onClick={() => {
+                                    if (data?.VERIFIED_LOCATION?.latitude && data?.VERIFIED_LOCATION?.longitude) {
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${data?.VERIFIED_LOCATION?.latitude},${data?.VERIFIED_LOCATION?.longitude}`, '_blank');
+                                    } else {
+                                        if (data?.Latitude && data?.Longitude) {
+                                            window.open(`https://www.google.com/maps/search/?api=1&query=${data?.Latitude},${data?.Longitude}`, '_blank');
+                                        }
+                                    }
+                                }}
+                            >
+                                {data?.Retailer_Name}
+                            </h6>
+                            <p><LocationOn className="fa-14 text-primary" /> {data?.Reatailer_Address}</p>
+                            <p className="fa-14 "> {data?.RouteGet}</p>
+                            <p className="fa-14 ">Class: {data?.Retailer_Class}</p>
+                            <p className="text-primary "><Person className="fa-14 text-primary" /> {data?.Contact_Person}</p>
+                            <a href={`tel:${data?.Mobile_No}`}><Call className="fa-14 text-primary" />
+                                <span className="ps-1">{data?.Mobile_No}</span>
+                            </a>
 
-                        <h6 className="mb-2 fa-16 fw-bold text-primary">{data?.Reatailer_Address}</h6>
-                        <p className="fw-bold fa-14 text-muted">Route: {data?.RouteGet}</p>
-                        <p className="fw-bold fa-14 text-muted">Class: {data?.Retailer_Class}</p>
-                        <p className="fw-bold fa-14 text-muted">
-                            Created: {data?.Created_Date ? new Date(data?.Created_Date).toLocaleDateString('en-IN') : '--:--:--'}
-                            &nbsp; - &nbsp;
-                            {data?.createdBy}
-                        </p>
-                        <p><Person className="fa-13 text-primary" /> {data?.Contact_Person}</p>
-                        <p><Call className="fa-13 text-primary" /> {data?.Mobile_No}</p>
+                            <p className="fw-bold fa-14 text-muted">
+                                Created: {data?.Created_Date ? new Date(data?.Created_Date).toLocaleDateString('en-IN') : '--:--:--'}
+                                &nbsp; - &nbsp;
+                                {data?.createdBy}
+                            </p>
 
-                    </CardContent>
-                </Card>
-            </div>
+                        </CardContent>
+                    </div>
+                </div>
+            </Card>
         )
     }
 
@@ -197,13 +159,14 @@ const RetailerClosingStock = () => {
     const closeStockDialog = () => {
         setDialog({ ...dialog, closingStock: false });
         setClosingStockValues([]);
-        setStockInputValue(initialStockValue)
+        setStockInputValue(initialStockValue);
+        setIsEdit(false)
     }
 
     const postClosingStock = () => {
         if (closingStockValues?.length > 0 && stockInputValue?.Retailer_Id) {
             fetch(`${api}api/masters/retailers/closingStock`, {
-                method: 'POST',
+                method: isEdit ? 'PUT' : 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -216,7 +179,8 @@ const RetailerClosingStock = () => {
                 .then(data => {
                     if (data.success) {
                         toast.success(data?.message);
-                        closeStockDialog()
+                        closeStockDialog();
+                        setReload(!reload)
                     } else {
                         toast.error(data?.message)
                     }
@@ -229,18 +193,100 @@ const RetailerClosingStock = () => {
 
     const getClosingStockCount = (productID) => {
         const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
-        return obj[0]?.Previous_Balance ? 'Previous: ( ' + obj[0]?.Previous_Balance + ' )' : '' 
+        return obj[0]?.Previous_Balance ? 'Previous: ( ' + obj[0]?.Previous_Balance + ' )' : ''
     }
+
+    const GroupByDate = ({ o }) => {
+        const [open, setOpen] = useState(false);
+
+        return (
+            <div className=" pt-3 ">
+                <div className="fa-14 fw-bold text-muted d-flex align-items-center">
+
+                    <IconButton size="small" onClick={() => setOpen(!open)} >
+                        {open ? <ExpandLess /> : <ExpandMore />}
+                    </IconButton>
+
+                    <span className="flex-grow-1">
+                        Date:
+                        <span className="ps-1 text-primary">
+                            {o?.ST_Date ? new Date(o?.ST_Date).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : null}
+                        </span>
+                        ,&nbsp;
+                        By:
+                        <span className="ps-1 text-primary">{o?.CreatedByGet} </span>
+                        ( {o?.ProductCount?.length} )
+                    </span>
+
+                    <span className="ps-1">
+                        <IconButton size="small" onClick={() => {
+                            setIsEdit(true);
+                            setStockInputValue({
+                                ...stockInputValue,
+                                Company_Id: retailerInfo?.Company_Id,
+                                ST_Date: new Date(o?.ST_Date).toISOString().split('T')[0],
+                                Retailer_Id: retailerInfo?.Retailer_Id,
+                                Retailer_Name: retailerInfo?.Retailer_Name,
+                                Narration: o?.Narration,
+                                Created_by: storage?.UserId,
+                                ST_Id: o?.ST_Id,
+                            })
+                            setClosingStockValues([...o?.ProductCount?.map(eo => ({
+                                Product_Id: eo?.Item_Id,
+                                ST_Qty: eo?.ST_Qty
+                            }))]);
+                            setDialog({ ...dialog, closingStock: true })
+                        }}>
+                            <Edit className="fa-16 text-dark" />
+                        </IconButton>
+                    </span>
+
+                </div>
+
+
+                <Collapse in={open} unmountOnExit>
+                    <div className="table-responsive mt-2">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th className="border fa-14">SNo</th>
+                                    <th className="border fa-14">Product</th>
+                                    <th className="border fa-14">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {o?.ProductCount?.map((oo, ii) => (
+                                    <tr key={ii}>
+                                        <td className="border fa-14">{ii + 1}</td>
+                                        <td className="border fa-14 fw-bold text-muted">{oo?.ProductName}</td>
+                                        <td className="border fa-14">{oo?.ST_Qty}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Collapse>
+            </div>
+        )
+    }
+
+    useEffect(() => {
+        const filt = productClosingStock?.filter(o => Number(o?.Previous_Balance) > 0)
+        setFilteredProductClosingStock(filt)
+    }, [productClosingStock])
 
     return (
         <>
 
             <div className="row mb-2">
-                <div className="col-md-4 col-sm-6">
+                <div className="col-lg-3 col-md-4 col-sm-6">
                     <label>Retailer</label>
                     <Select
                         value={{ value: filters?.cust, label: filters?.custGet }}
-                        onChange={(e) => setFilters({ ...filters, cust: e.value, custGet: e.label })}
+                        onChange={(e) => {
+                            setFilters({ ...filters, cust: e.value, custGet: e.label });
+                            setStockInputValue({ ...stockInputValue, Retailer_Id: e.value, Retailer_Name: e.label })
+                        }}
                         options={[
                             { value: '', label: 'All Retailer' },
                             ...retailers.map(obj => ({ value: obj?.Retailer_Id, label: obj?.Retailer_Name }))
@@ -250,29 +296,87 @@ const RetailerClosingStock = () => {
                         placeholder={"Retailer Name"}
                     />
                 </div>
+                <div className="col-lg-3 col-md-4 col-sm-6">
+                    <label>From Date</label>
+                    <input
+                        type="date"
+                        onChange={e => setFilters({ ...filters, Fromdate: e.target.value })}
+                        className="cus-inpt"
+                        value={filters.Fromdate ? new Date(filters.Fromdate).toISOString().split('T')[0] : ''}
+                    />
+                </div>
+                <div className="col-lg-3 col-md-4 col-sm-6">
+                    <label>To Date</label>
+                    <input
+                        type="date"
+                        onChange={e => setFilters({ ...filters, Todate: e.target.value })}
+                        className="cus-inpt"
+                        value={filters.Todate ? new Date(filters.Todate).toISOString().split('T')[0] : ''}
+                    />
+                </div>
             </div>
 
-            <div style={{ maxHeight: '80vh', overflowY: 'scroll' }}>
+            <div>
 
-                <Card sx={{ mb: 1 }} >
-                    <DataTable
-                        columns={retailerColumn}
-                        data={
-                            filteredData.length > 0
-                                ? filteredData
-                                : (filters?.area === '' && filters?.cust === '')
-                                    ? retailers
-                                    : []
-                        }
-                        pagination
-                        highlightOnHover={true}
-                        fixedHeader={true}
-                        fixedHeaderScrollHeight={'100vh'}
-                        customStyles={customTableStyles}
-                        expandableRows
-                        expandableRowsComponent={RetailerDetails}
-                    />
-                </Card>
+                {filters.cust && <RetailerDetails data={retailerInfo} />}
+
+                {filters.cust && (
+                    <>
+                        <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
+
+                            <div className="p-3 d-flex align-items-center border-bottom">
+                                <span className="fa-18 fw-bold flex-grow-1">Closing Stock</span>
+                                <span>
+                                    <Button startIcon={<Queue />} variant='outlined' onClick={() => setDialog({ ...dialog, closingStock: true })} >
+                                        Add
+                                    </Button>
+                                </span>
+                            </div>
+
+                            {retailerInfo?.ClosingStocks?.length > 0 && (
+                                <CardContent className="pt-0" sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                                    {retailerInfo?.ClosingStocks?.map((o, i) => (
+                                        <GroupByDate o={o} key={i} />
+                                    ))}
+                                </CardContent>
+                            )}
+                        </Card>
+                    </>
+                )}
+
+                {filters?.cust && (
+                    <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
+                        <div className="p-3 fa-18 fw-bold">
+                            Current Stock 
+                            <span style={{fontWeight: 'normal', fontSize: '16px'}}> ( Products {filteredProductClosingStock?.length} )</span>
+                        </div>
+
+                        {filteredProductClosingStock?.length > 0 && (
+                            <CardContent sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                                <div className="table-responsive">
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th className="fa-14 border">Sno</th>
+                                                <th className="fa-14 border">Product Name</th>
+                                                <th className="fa-14 border">Quantity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredProductClosingStock?.map((o, i) => (
+                                                <tr key={i}>
+                                                    <td className="fa-14 border">{i + 1}</td>
+                                                    <td className="fa-14 border">{o?.Product_Name}</td>
+                                                    <td className="fa-14 border">{o?.Previous_Balance}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        )}
+                    </Card>
+                )}
 
             </div>
 
@@ -285,7 +389,7 @@ const RetailerClosingStock = () => {
                     <IconButton size="small" onClick={closeStockDialog} className="me-2">
                         <ArrowBack />
                     </IconButton>
-                    Add Closing Stock For
+                    {isEdit ? 'Modify' : 'Add'} Closing Stock For
                     <span className="ps-1 text-primary">{stockInputValue?.Retailer_Name}</span>
                 </DialogTitle>
                 <DialogContent>
