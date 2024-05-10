@@ -30,6 +30,7 @@ const customTableStyles = {
         style: {
             width: 'auto',
             backgroundColor: 'transparent',
+            // borderRadius: '5px',
         }
     },
     rows: {
@@ -39,9 +40,10 @@ const customTableStyles = {
     },
     headCells: {
         style: {
-            backgroundColor: 'rgb(15, 11, 42)',
+            backgroundColor: '#6b9080f8',
             color: 'white',
             fontSize: '14px',
+            // borderRadius: '5px',
         },
     },
 };

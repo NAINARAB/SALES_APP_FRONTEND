@@ -2,20 +2,24 @@ import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
 import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, CardContent, CardMedia, Tooltip, Button } from "@mui/material";
-import { Person, Call, LocationOn, ArrowBack, Edit, Verified } from "@mui/icons-material";
+import { Person, Call, LocationOn, ArrowBack, Edit, Verified, Add } from "@mui/icons-material";
 import '../common.css'
 import Select from "react-select";
 import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
-// import { toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 
 const RetailersMaster = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
     const [retailers, setRetailers] = useState([]);
     const [area, setArea] = useState([]);
-    const [filteredData, setFilteredData] = useState([])
+    const [outlet, setOutlet] = useState([]);
+    const [routes, setRoutes] = useState([]);
+    const [states, setStates] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
 
+    const [reload, setReload] = useState(false);
     const [dialog, setDialog] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
 
@@ -28,15 +32,25 @@ const RetailersMaster = () => {
 
     const initialStockValue = {
         Company_Id: storage?.Company_id,
-        ST_Date: new Date().toISOString().split('T')[0],
         Retailer_Id: '',
         Retailer_Name: '',
-        Narration: '',
-        Created_by: storage?.UserId,
-        Product_Stock_List: []
+        Contact_Person: '',
+        Mobile_No: '',
+        Retailer_Channel_Id: '', //select
+        Retailer_Class: '',
+        Route_Id: '', //select
+        Area_Id: '', //select
+        Reatailer_Address: '',
+        Reatailer_City: '',
+        PinCode: '',
+        State_Id: '', //select
+        Branch_Id: storage?.BranchId,
+        Gstno: '',
+        Created_By: storage?.UserId,
+        Updated_By: storage?.UserId,
     }
-    const [stockInputValue, setStockInputValue] = useState(initialStockValue)
 
+    const [stockInputValue, setStockInputValue] = useState(initialStockValue)
 
     useEffect(() => {
         fetch(`${api}api/masters/retailers?Company_Id=${storage?.Company_id}`)
@@ -46,7 +60,7 @@ const RetailersMaster = () => {
                     setRetailers(data.data);
                 }
             }).catch(e => console.error(e))
-    }, [])
+    }, [reload, storage?.Company_id])
 
     useEffect(() => {
         fetch(`${api}api/masters/areas`)
@@ -54,6 +68,27 @@ const RetailersMaster = () => {
             .then(data => {
                 if (data.success) {
                     setArea(data.data)
+                }
+            }).catch(e => console.error(e))
+        fetch(`${api}api/masters/outlets`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setOutlet(data.data)
+                }
+            }).catch(e => console.error(e))
+        fetch(`${api}api/masters/routes`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setRoutes(data.data)
+                }
+            }).catch(e => console.error(e))
+        fetch(`${api}api/masters/state`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setStates(data.data)
                 }
             }).catch(e => console.error(e))
     }, [])
@@ -106,16 +141,24 @@ const RetailersMaster = () => {
             cell: (row) => (
                 <>
                     <Tooltip title='Edit Retailer'>
-                        <IconButton size="small" onClick={() => {
-                            setDialog(true);
-                            setIsEdit(true)
-                            setStockInputValue({
-                                ...stockInputValue,
-                                Company_Id: row?.Company_Id,
-                                Retailer_Id: row.Retailer_Id,
-                                Retailer_Name: row?.Retailer_Name,
-                            })
-                        }} >
+                        <IconButton
+                            size="small"
+                            onClick={() => {
+                                setDialog(true);
+                                setIsEdit(true);
+                                const {
+                                    Company_Id, Retailer_Id, Retailer_Name, Contact_Person, Mobile_No,
+                                    Retailer_Channel_Id, Retailer_Class, Route_Id, Area_Id, Reatailer_Address,
+                                    Reatailer_City, PinCode, State_Id, Gstno, 
+                                } = row;
+                                setStockInputValue(pre =>({
+                                    ...pre,
+                                    Company_Id, Retailer_Id, Retailer_Name, Contact_Person, Mobile_No,
+                                    Retailer_Channel_Id, Retailer_Class, Route_Id, Area_Id, Reatailer_Address,
+                                    Reatailer_City, PinCode, State_Id, Gstno
+                                }))
+                            }} 
+                        >
                             <Edit />
                         </IconButton>
                     </Tooltip>
@@ -130,9 +173,7 @@ const RetailersMaster = () => {
                         <Tooltip title='Open in Google Map'>
                             <IconButton
                                 size="small"
-                                onClick={() => {
-                                    window.open(`https://www.google.com/maps/search/?api=1&query=${row?.Latitude},${row?.Longitude}`, '_blank');
-                                }}
+                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${row?.Latitude},${row?.Longitude}`, '_blank')}
                                 className="btn btn-info fa-14" color='primary'>
                                 <LocationOn />
                             </IconButton>
@@ -176,89 +217,299 @@ const RetailersMaster = () => {
         )
     }
 
-    const closeStockDialog = () => {
+    const closeDialog = () => {
         setDialog(false);
-        setStockInputValue(initialStockValue)
+        setStockInputValue(initialStockValue);
+        setIsEdit(false)
+    }
+
+    function onlynum(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    }
+
+    const setValue = (key, value) => {
+        setStockInputValue({ ...stockInputValue, [key]: value });
+    }
+
+    const input = [
+        {
+            label: 'Retailer Name',
+            elem: 'input',
+            placeholder: "",
+            event: (e) => setValue('Retailer_Name', e.target.value),
+            required: true,
+            value: stockInputValue.Retailer_Name,
+        },
+        {
+            label: 'Contact Person Name',
+            elem: 'input',
+            placeholder: "",
+            event: (e) => setValue('Contact_Person', e.target.value),
+            required: true,
+            value: stockInputValue.Contact_Person,
+        },
+        {
+            label: 'Mobile Number',
+            elem: 'input',
+            placeholder: "",
+            oninput: (e) => onlynum(e),
+            event: (e) => setValue('Mobile_No', e.target.value),
+            required: true,
+            value: stockInputValue.Mobile_No,
+            // minLength: 10,
+            maxLength: 10,
+        },
+        {
+            label: 'Gstno',
+            elem: 'input',
+            placeholder: "",
+            event: (e) => setValue('Gstno', e.target.value),
+            value: stockInputValue.Gstno,
+            maxLength: 15,
+        },
+        {
+            label: 'Outlet',
+            elem: 'select',
+            options: [
+                { value: '', label: 'SELECT', disabled: true, selected: true },
+                ...outlet?.map(o => ({ value: o?.Out_Let_Id, label: o?.Outlet_Type }))
+            ],
+            event: (e) => setValue('Retailer_Channel_Id', e.target.value),
+            required: true,
+            value: stockInputValue.Retailer_Channel_Id,
+        },
+        {
+            label: 'Retailer Class',
+            elem: 'select',
+            options: [
+                { value: '', label: 'SELECT', disabled: true, selected: true },
+                { value: 'A', label: 'A' },
+                { value: 'B', label: 'B' },
+                { value: 'C', label: 'C' }
+            ],
+            event: (e) => setValue('Retailer_Class', e.target.value),
+            required: true,
+            value: stockInputValue.Retailer_Class,
+        },
+        {
+            label: 'Route',
+            elem: 'select',
+            options: [
+                { value: '', label: 'SELECT', disabled: true, selected: true },
+                ...routes?.map(o => ({ value: o?.Route_Id, label: o?.Route_Name }))
+            ],
+            event: (e) => setValue('Route_Id', e.target.value),
+            value: stockInputValue.Route_Id,
+            required: true
+        },
+        {
+            label: 'Area',
+            elem: 'select',
+            options: [
+                { value: '', label: 'SELECT', disabled: true, selected: true },
+                ...area?.map(o => ({ value: o?.Area_Id, label: o?.Area_Name }))
+            ],
+            event: (e) => setValue('Area_Id', e.target.value),
+            required: true,
+            value: stockInputValue.Area_Id,
+        },
+        {
+            label: 'City',
+            elem: 'input',
+            event: (e) => setValue('Reatailer_City', e.target.value),
+            value: stockInputValue.Reatailer_City,
+        },
+        {
+            label: 'Pincode',
+            elem: 'input',
+            placeholder: "",
+            oninput: (e) => onlynum(e),
+            event: (e) => setValue('PinCode', e.target.value),
+            value: stockInputValue.PinCode,
+            maxLength: 6
+        },
+        {
+            label: 'State',
+            elem: 'select',
+            options: [
+                { value: '', label: 'SELECT', disabled: true, selected: true },
+                ...states?.map(o => ({ value: o?.State_Id, label: o?.State_Name }))
+            ],
+            event: (e) => setValue('State_Id', e.target.value),
+            required: true,
+            value: stockInputValue.State_Id,
+        },
+        {
+            label: 'Address',
+            elem: 'textarea',
+            event: (e) => setValue('Reatailer_Address', e.target.value),
+            required: true,
+            value: stockInputValue.Reatailer_Address,
+        },
+    ];
+
+    // useEffect(() => {
+    //     console.log(stockInputValue)
+    // }, [stockInputValue])
+
+    const postAndPutRetailers = () => {
+        fetch(`${api}api/masters/retailers`, {
+            method: isEdit ? 'PUT' : 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(stockInputValue)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    toast.success(data?.message)
+                    closeDialog();
+                    setReload(!reload)
+                } else {
+                    toast.error(data?.message)
+                }
+            }).catch(e => console.error(e))
     }
 
     return (
         <>
 
-            <div className="row mb-2">
-
-                <div className="col-md-4 col-sm-6">
-                    <label>Area</label>
-                    <Select
-                        value={{ value: filters?.area, label: filters?.areaGet }}
-                        onChange={(e) => setFilters({ ...filters, area: e.value, areaGet: e.label })}
-                        options={[
-                            { value: '', label: 'All Area' },
-                            ...area.map(obj => ({ value: obj?.Area_Id, label: obj?.Area_Name }))
-                        ]}
-                        styles={customSelectStyles}
-                        isSearchable={true}
-                        placeholder={"Area Name"}
-                    />
-                </div>
-
-                <div className="col-md-4 col-sm-6">
-                    <label>Retailer</label>
-                    <Select
-                        value={{ value: filters?.cust, label: filters?.custGet }}
-                        onChange={(e) => setFilters({ ...filters, cust: e.value, custGet: e.label })}
-                        options={[
-                            { value: '', label: 'All Retailer' },
-                            ...retailers.map(obj => ({ value: obj?.Retailer_Id, label: obj?.Retailer_Name }))
-                        ]}
-                        styles={customSelectStyles}
-                        isSearchable={true}
-                        placeholder={"Retailer Name"}
-                        isDisabled={filters.area}
-                    />
-                </div>
-
-            </div>
-
             <Card sx={{ mb: 1 }} >
-                <DataTable
-                    columns={retailerColumn}
-                    data={
-                        filteredData.length > 0
-                            ? filteredData
-                            : (filters?.area === '' && filters?.cust === '')
-                                ? retailers
-                                : []
-                    }
-                    pagination
-                    highlightOnHover={true}
-                    fixedHeader={true}
-                    fixedHeaderScrollHeight={'100vh'}
-                    customStyles={customTableStyles}
-                    expandableRows
-                    expandableRowsComponent={RetailerDetails}
-                />
+                <div className="p-3 pb-0 d-flex align-items-center">
+                    <h6 className="flex-grow-1 fa-18">Retailers</h6>
+                    <Button variant='outlined' startIcon={<Add />} onClick={() => setDialog(true)}>Add Retailers</Button>
+                </div>
+
+                <CardContent>
+
+                    <div className="row mb-3">
+
+                        <div className="col-md-4 col-sm-6">
+                            <label>Area</label>
+                            <Select
+                                value={{ value: filters?.area, label: filters?.areaGet }}
+                                onChange={(e) => setFilters({ ...filters, area: e.value, areaGet: e.label })}
+                                options={[
+                                    { value: '', label: 'All Area' },
+                                    ...area.map(obj => ({ value: obj?.Area_Id, label: obj?.Area_Name }))
+                                ]}
+                                styles={customSelectStyles}
+                                isSearchable={true}
+                                placeholder={"Area Name"}
+                            />
+                        </div>
+
+                        <div className="col-md-4 col-sm-6">
+                            <label>Retailer</label>
+                            <Select
+                                value={{ value: filters?.cust, label: filters?.custGet }}
+                                onChange={(e) => setFilters({ ...filters, cust: e.value, custGet: e.label })}
+                                options={[
+                                    { value: '', label: 'All Retailer' },
+                                    ...retailers.map(obj => ({ value: obj?.Retailer_Id, label: obj?.Retailer_Name }))
+                                ]}
+                                styles={customSelectStyles}
+                                isSearchable={true}
+                                placeholder={"Retailer Name"}
+                                isDisabled={filters.area}
+                            />
+                        </div>
+
+                    </div>
+
+                    <div className="rounded-4 overflow-hidden" >
+                        <DataTable
+                            columns={retailerColumn}
+                            data={
+                                filteredData.length > 0
+                                    ? filteredData
+                                    : (filters?.area === '' && filters?.cust === '')
+                                        ? retailers
+                                        : []
+                            }
+                            pagination
+                            highlightOnHover={true}
+                            fixedHeader={true}
+                            fixedHeaderScrollHeight={'60vh'}
+                            customStyles={customTableStyles}
+                            expandableRows
+                            expandableRowsComponent={RetailerDetails}
+                        />
+                    </div>
+
+                </CardContent>
             </Card>
 
             <Dialog
                 open={dialog}
-                onClose={closeStockDialog}
+                onClose={closeDialog}
                 fullScreen
             >
                 <DialogTitle>
-                    <IconButton size="small" onClick={closeStockDialog} className="me-2">
+                    <IconButton size="small" onClick={closeDialog} className="me-2">
                         <ArrowBack />
                     </IconButton>
-                    Add Closing Stock For
-                    <span className="ps-1 text-primary">{stockInputValue?.Retailer_Name}</span>
+                    {isEdit ? 'Modify Retailer ' + stockInputValue?.Retailer_Name : 'Create Retailer'}
                 </DialogTitle>
-                <DialogContent>
-
-
-                </DialogContent>
-                <DialogActions className="bg-light">
-                    <Button onClick={closeStockDialog}>cancel</Button>
-                    <Button variant='contained' color='success' onClick={() => { }}>confirm</Button>
-                </DialogActions>
+                <form onSubmit={e => {
+                    e.preventDefault();
+                    postAndPutRetailers();
+                }}>
+                    <DialogContent>
+                        <div className="row">
+                            {input.map((field, index) => (
+                                <div key={index} className={`p-2 px-3 ${field.elem !== 'textarea' ? 'col-lg-4 col-md-6' : 'col-12'}`}>
+                                    <label>
+                                        {field.label}
+                                        {field.required && (
+                                            <p style={{ color: 'red', display: 'inline', fontWeight: 'bold', fontSize: '1em' }}> *</p>
+                                        )}
+                                    </label>
+                                    {field.elem === 'input' ? (
+                                        <input
+                                            type={field.type || 'text'}
+                                            className='cus-inpt p-3 b-0'
+                                            onChange={field.event}
+                                            onInput={field.oninput}
+                                            required={field.required || false}
+                                            disabled={field.disabled} minLength={field.minLength}
+                                            value={field.value} maxLength={field.maxLength}
+                                        />
+                                    ) : field.elem === 'select' ? (
+                                        <select
+                                            className={'cus-inpt p-3 b-0'}
+                                            onChange={field.event}
+                                            value={field.value}
+                                            required={field.required || false}
+                                        >
+                                            {field.options.map((option, optionIndex) => (
+                                                <option
+                                                    key={optionIndex}
+                                                    value={option.value}
+                                                    disabled={option.disabled}
+                                                    defaultValue={option.selected} >
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : field.elem === 'textarea' ? (
+                                        <textarea
+                                            className='cus-inpt b-0'
+                                            onChange={field.event}
+                                            required={field.required || false}
+                                            rows={4} value={field.value}
+                                        />
+                                    ) : null}
+                                </div>
+                            ))}
+                        </div>
+                    </DialogContent>
+                    <DialogActions >
+                        <Button type="button" onClick={closeDialog}>cancel</Button>
+                        <Button type="submit" variant='contained' color='success' >confirm</Button>
+                    </DialogActions>
+                </form>
             </Dialog>
         </>
     )

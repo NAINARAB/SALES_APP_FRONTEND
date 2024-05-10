@@ -27,7 +27,7 @@ const RetailerClosingStock = () => {
     });
     const [filters, setFilters] = useState({
         cust: '',
-        custGet: 'All Retailer',
+        custGet: 'Select Retailer',
         Fromdate: new Date(new Date().setDate(new Date().getDate() - 100)).toISOString().split('T')[0],
         Todate: new Date().toISOString().split('T')[0],
     });
@@ -159,7 +159,11 @@ const RetailerClosingStock = () => {
     const closeStockDialog = () => {
         setDialog({ ...dialog, closingStock: false });
         setClosingStockValues([]);
-        setStockInputValue(initialStockValue);
+        setStockInputValue({
+            ...initialStockValue,
+            Retailer_Id: filters?.cust,
+            Retailer_Name: filters?.custGet
+        });
         setIsEdit(false)
     }
 
@@ -203,17 +207,21 @@ const RetailerClosingStock = () => {
             <div className=" pt-3 ">
                 <div className="fa-14 fw-bold text-muted d-flex align-items-center">
 
-                    <IconButton size="small" onClick={() => setOpen(!open)} >
+                    <IconButton size="small" className="me-2" onClick={() => setOpen(!open)} >
                         {open ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
 
                     <span className="flex-grow-1">
-                        Date:
+                        Date:&emsp;
                         <span className="ps-1 text-primary">
-                            {o?.ST_Date ? new Date(o?.ST_Date).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : null}
+                            {
+                                o?.ST_Date
+                                    ? new Date(o?.ST_Date).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                                    : null
+                            }
                         </span>
-                        ,&nbsp;
-                        By:
+                        <br />
+                        By:&emsp;&emsp;
                         <span className="ps-1 text-primary">{o?.CreatedByGet} </span>
                         ( {o?.ProductCount?.length} )
                     </span>
@@ -279,6 +287,7 @@ const RetailerClosingStock = () => {
         <>
 
             <div className="row mb-2">
+
                 <div className="col-lg-3 col-md-4 col-sm-6">
                     <label>Retailer</label>
                     <Select
@@ -296,6 +305,7 @@ const RetailerClosingStock = () => {
                         placeholder={"Retailer Name"}
                     />
                 </div>
+
                 <div className="col-lg-3 col-md-4 col-sm-6">
                     <label>From Date</label>
                     <input
@@ -305,6 +315,7 @@ const RetailerClosingStock = () => {
                         value={filters.Fromdate ? new Date(filters.Fromdate).toISOString().split('T')[0] : ''}
                     />
                 </div>
+
                 <div className="col-lg-3 col-md-4 col-sm-6">
                     <label>To Date</label>
                     <input
@@ -314,71 +325,69 @@ const RetailerClosingStock = () => {
                         value={filters.Todate ? new Date(filters.Todate).toISOString().split('T')[0] : ''}
                     />
                 </div>
+
             </div>
 
-            <div>
+            {filters.cust && <RetailerDetails data={retailerInfo} />}
 
-                {filters.cust && <RetailerDetails data={retailerInfo} />}
-
-                {filters.cust && (
-                    <>
-                        <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
-
-                            <div className="p-3 d-flex align-items-center border-bottom">
-                                <span className="fa-18 fw-bold flex-grow-1">Closing Stock</span>
-                                <span>
-                                    <Button startIcon={<Queue />} variant='outlined' onClick={() => setDialog({ ...dialog, closingStock: true })} >
-                                        Add
-                                    </Button>
-                                </span>
-                            </div>
-
-                            {retailerInfo?.ClosingStocks?.length > 0 && (
-                                <CardContent className="pt-0" sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
-                                    {retailerInfo?.ClosingStocks?.map((o, i) => (
-                                        <GroupByDate o={o} key={i} />
-                                    ))}
-                                </CardContent>
-                            )}
-                        </Card>
-                    </>
-                )}
-
-                {filters?.cust && (
+            {filters.cust && (
+                <>
                     <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
-                        <div className="p-3 fa-18 fw-bold">
-                            Current Stock 
-                            <span style={{fontWeight: 'normal', fontSize: '16px'}}> ( Products {filteredProductClosingStock?.length} )</span>
+
+                        <div className="p-3 d-flex align-items-center border-bottom">
+                            <span className="fa-18 fw-bold flex-grow-1">Closing Stock</span>
+                            <span>
+                                <Button startIcon={<Queue />} variant='outlined' onClick={() => setDialog({ ...dialog, closingStock: true })} >
+                                    Add
+                                </Button>
+                            </span>
                         </div>
 
-                        {filteredProductClosingStock?.length > 0 && (
-                            <CardContent sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
-                                <div className="table-responsive">
-                                    <table className="table">
-                                        <thead>
-                                            <tr>
-                                                <th className="fa-14 border">Sno</th>
-                                                <th className="fa-14 border">Product Name</th>
-                                                <th className="fa-14 border">Quantity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredProductClosingStock?.map((o, i) => (
-                                                <tr key={i}>
-                                                    <td className="fa-14 border">{i + 1}</td>
-                                                    <td className="fa-14 border">{o?.Product_Name}</td>
-                                                    <td className="fa-14 border">{o?.Previous_Balance}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                        {retailerInfo?.ClosingStocks?.length > 0 && (
+                            <CardContent className="pt-0" sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                                {retailerInfo?.ClosingStocks?.map((o, i) => (
+                                    <GroupByDate o={o} key={i} />
+                                ))}
                             </CardContent>
                         )}
-                    </Card>
-                )}
 
-            </div>
+                    </Card>
+                </>
+            )}
+
+            {filters?.cust && (
+                <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
+                    <div className="p-3 fa-18 fw-bold">
+                        Current Stock
+                        <span style={{ fontWeight: 'normal', fontSize: '16px' }}> ( Products {filteredProductClosingStock?.length} )</span>
+                    </div>
+
+                    {filteredProductClosingStock?.length > 0 && (
+                        <CardContent sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                            <div className="table-responsive">
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th className="fa-14 border">Sno</th>
+                                            <th className="fa-14 border">Product Name</th>
+                                            <th className="fa-14 border">Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredProductClosingStock?.map((o, i) => (
+                                            <tr key={i}>
+                                                <td className="fa-14 border">{i + 1}</td>
+                                                <td className="fa-14 border">{o?.Product_Name}</td>
+                                                <td className="fa-14 border">{o?.Previous_Balance}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
+            )}
 
             <Dialog
                 open={dialog?.closingStock}
