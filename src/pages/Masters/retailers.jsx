@@ -149,15 +149,15 @@ const RetailersMaster = () => {
                                 const {
                                     Company_Id, Retailer_Id, Retailer_Name, Contact_Person, Mobile_No,
                                     Retailer_Channel_Id, Retailer_Class, Route_Id, Area_Id, Reatailer_Address,
-                                    Reatailer_City, PinCode, State_Id, Gstno, 
+                                    Reatailer_City, PinCode, State_Id, Gstno,
                                 } = row;
-                                setStockInputValue(pre =>({
+                                setStockInputValue(pre => ({
                                     ...pre,
                                     Company_Id, Retailer_Id, Retailer_Name, Contact_Person, Mobile_No,
                                     Retailer_Channel_Id, Retailer_Class, Route_Id, Area_Id, Reatailer_Address,
                                     Reatailer_City, PinCode, State_Id, Gstno
                                 }))
-                            }} 
+                            }}
                         >
                             <Edit />
                         </IconButton>

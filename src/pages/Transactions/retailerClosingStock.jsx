@@ -144,15 +144,18 @@ const RetailerClosingStock = () => {
         )
     }
 
-    const handleStockInputChange = (productId, value) => {
+    const handleStockInputChange = (productId, value, date, previousStock) => {
         const productIndex = closingStockValues.findIndex(item => item.Product_Id === productId);
 
         if (productIndex !== -1) {
             const updatedValues = [...closingStockValues];
             updatedValues[productIndex].ST_Qty = value;
+            updatedValues[productIndex].PR_Qty = previousStock;
+            updatedValues[productIndex].LT_CL_Date = date;
+
             setClosingStockValues(updatedValues);
         } else {
-            setClosingStockValues(prevValues => [...prevValues, { Product_Id: productId, ST_Qty: value }]);
+            setClosingStockValues(prevValues => [...prevValues, { Product_Id: productId, ST_Qty: value, PR_Qty: previousStock, LT_CL_Date: date }]);
         }
     };
 
@@ -198,6 +201,16 @@ const RetailerClosingStock = () => {
     const getClosingStockCount = (productID) => {
         const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
         return obj[0]?.Previous_Balance ? 'Previous: ( ' + obj[0]?.Previous_Balance + ' )' : ''
+    }
+
+    const getClosingStockCountNumber = (productID) => {
+        const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
+        return obj[0]?.Previous_Balance || 0
+    }
+
+    const getClosingStockDate = (productID) => {
+        const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
+        return obj[0]?.Cl_Date || new Date()
     }
 
     const GroupByDate = ({ o }) => {
@@ -282,6 +295,8 @@ const RetailerClosingStock = () => {
         const filt = productClosingStock?.filter(o => Number(o?.Previous_Balance) > 0)
         setFilteredProductClosingStock(filt)
     }, [productClosingStock])
+
+    // useEffect(() => console.log(closingStockValues), [closingStockValues])
 
     return (
         <>
@@ -457,13 +472,19 @@ const RetailerClosingStock = () => {
                                                             style={{ maxWidth: 350 }}
                                                             type="number"
                                                             className="cus-inpt"
-                                                            onChange={e => handleStockInputChange(oo?.Product_Id, e.target.value)}
-                                                            value={
-                                                                (closingStockValues.find(ooo =>
-                                                                    Number(ooo?.Product_Id) === Number(oo?.Product_Id))?.ST_Qty
-                                                                    || ''
+                                                            onChange={e =>
+                                                                handleStockInputChange(
+                                                                    oo?.Product_Id,
+                                                                    e.target.value,
+                                                                    getClosingStockDate(oo?.Product_Id),
+                                                                    getClosingStockCountNumber(oo?.Product_Id)
                                                                 )
                                                             }
+                                                            value={(
+                                                                closingStockValues.find(ooo =>
+                                                                    Number(ooo?.Product_Id) === Number(oo?.Product_Id))?.ST_Qty
+                                                                || ''
+                                                            )}
                                                             placeholder={getClosingStockCount(oo?.Product_Id)}
                                                         />
                                                     </div>

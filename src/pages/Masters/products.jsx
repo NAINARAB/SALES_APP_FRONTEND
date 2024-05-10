@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Button, Paper } from "@mui/material";
+import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Button, Paper, CardContent } from "@mui/material";
 import { Edit, Add, AddPhotoAlternate } from "@mui/icons-material";
 import '../common.css'
 import { api } from "../../host";
@@ -14,6 +14,7 @@ const ProductsMaster = () => {
     const [filterInput, setFilterInput] = useState('');
     const [dialog, setDialog] = useState({
         imageUpload: false,
+        createAndUpdate: false
     })
     const initialInputValue = {
         Product_Id: '',
@@ -58,7 +59,7 @@ const ProductsMaster = () => {
                         <IconButton
                             onClick={() => {
                                 setDialog({ ...dialog, imageUpload: true });
-                                setProductInputValue({ ...productInputValue, Product_Id: row.Product_Id, Product_Name: row?.Product_Name})
+                                setProductInputValue({ ...productInputValue, Product_Id: row.Product_Id, Product_Name: row?.Product_Name })
                             }}
                             size="small"
                         >
@@ -145,40 +146,49 @@ const ProductsMaster = () => {
 
     return (
         <>
-
-            <div className="row  pe-2">
-                <div className="col-md-4 col-sm-11 col-10 pb-2">
-                    <input
-                        type="search"
-                        value={filterInput}
-                        className="cus-inpt"
-                        placeholder="Search"
-                        onChange={handleSearchChange}
-                    />
-                </div>
-                <div className="col-1">
-                    <IconButton>
-                        <Add />
-                    </IconButton>
-                </div>
-            </div>
-
             <Card component={Paper}>
-                <DataTable
-                    columns={productColumn}
-                    data={
-                        filteredData.length > 0
-                            ? filteredData
-                            : filterInput === ''
-                                ? products
-                                : []
-                    }
-                    pagination
-                    fixedHeader={true}
-                    fixedHeaderScrollHeight={'70vh'}
-                    customStyles={customTableStyles}
-                />
+                <div className="p-3 pb-0 d-flex align-items-center">
+                    <h6 className="flex-grow-1 fa-18">Products</h6>
+                    {/* <Button
+                        variant='outlined'
+                        startIcon={<Add />}
+                        onClick={() => setDialog({ ...dialog, createAndUpdate: true })}
+                    >
+                        Add products
+                    </Button> */}
+                </div>
+                <CardContent>
+                    <div className="col-xl-3 col-lg-4 col-md-4 col-sm-6 mb-3">
+                        <input
+                            type="search"
+                            value={filterInput}
+                            className="cus-inpt"
+                            placeholder="Search"
+                            onChange={handleSearchChange}
+                        />
+                    </div>
+                    <div className="rounded-4">
+                        <DataTable
+                            columns={productColumn}
+                            data={
+                                filteredData.length > 0
+                                    ? filteredData
+                                    : filterInput === ''
+                                        ? products
+                                        : []
+                            }
+                            pagination
+                            fixedHeader={true}
+                            fixedHeaderScrollHeight={'60vh'}
+                            customStyles={customTableStyles}
+                        />
+                    </div>
+                </CardContent>
             </Card>
+
+            {/* <Dialog>
+
+            </Dialog> */}
 
             <Dialog
                 open={dialog.imageUpload}
