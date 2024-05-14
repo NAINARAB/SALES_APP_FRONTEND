@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
 import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, CardContent, CardMedia, Tooltip, Button } from "@mui/material";
-import { Person, Call, LocationOn, ArrowBack, Edit, Verified, Add } from "@mui/icons-material";
+import { Person, Call, LocationOn, ArrowBack, Edit, Verified, Add, Delete } from "@mui/icons-material";
 import '../common.css'
 import Select from "react-select";
 import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
 import { toast } from 'react-toastify';
+import ImagePreviewDialog from "../AppLayout/imagePreview";
 
 
 const RetailersMaster = () => {
@@ -18,9 +19,11 @@ const RetailersMaster = () => {
     const [routes, setRoutes] = useState([]);
     const [states, setStates] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
+    const [selectedRetailer, setSelectedRetailer] = useState({});
 
     const [reload, setReload] = useState(false);
     const [dialog, setDialog] = useState(false);
+    const [multipleLocationDialogs, setMultipleLocationDialogs] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
 
     const [filters, setFilters] = useState({
@@ -164,12 +167,25 @@ const RetailersMaster = () => {
                     </Tooltip>
 
                     <Tooltip title='Verify Location'>
-                        <IconButton size="small">
-                            <Verified color='success' />
+                        <IconButton
+                            size="small"
+                            onClick={() => { setMultipleLocationDialogs(true); setSelectedRetailer(row); }}
+                            disabled={row?.AllLocations?.length === 0}
+                        >
+                            <Verified color={row?.AllLocations?.length === 0 ? 'disabled' : 'success'} />
                         </IconButton>
                     </Tooltip>
 
-                    {(row?.Latitude && row.Longitude) && (
+                    {(row?.VERIFIED_LOCATION?.latitude && row?.VERIFIED_LOCATION?.longitude) ? (
+                        <Tooltip title='Open in Google Map'>
+                            <IconButton
+                                size="small"
+                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${row?.VERIFIED_LOCATION?.latitude},${row?.VERIFIED_LOCATION?.longitude}`, '_blank')}
+                                className="btn btn-info fa-14" color='primary'>
+                                <LocationOn />
+                            </IconButton>
+                        </Tooltip>
+                    ) : (row?.Latitude && row.Longitude) && (
                         <Tooltip title='Open in Google Map'>
                             <IconButton
                                 size="small"
@@ -178,8 +194,8 @@ const RetailersMaster = () => {
                                 <LocationOn />
                             </IconButton>
                         </Tooltip>
-                    )}
-
+                    )
+                    }
                 </>
             )
         },
@@ -191,12 +207,14 @@ const RetailersMaster = () => {
             <div className="p-3">
                 <Card sx={{ display: 'flex', mb: 1 }} >
 
-                    <CardMedia
-                        component="img"
-                        sx={{ width: 350 }}
-                        image={data?.imageUrl}
-                        alt="retailer_picture"
-                    />
+                    <ImagePreviewDialog url={data?.imageUrl}>
+                        <CardMedia
+                            component="img"
+                            sx={{ width: 350 }}
+                            image={data?.imageUrl}
+                            alt="retailer_picture"
+                        />
+                    </ImagePreviewDialog>
 
                     <CardContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
 
@@ -221,6 +239,12 @@ const RetailersMaster = () => {
         setDialog(false);
         setStockInputValue(initialStockValue);
         setIsEdit(false)
+    }
+
+    const closeMultipleLocationDialog = () => {
+        setMultipleLocationDialogs(false);
+        setSelectedRetailer({});
+
     }
 
     function onlynum(e) {
@@ -348,9 +372,9 @@ const RetailersMaster = () => {
         },
     ];
 
-    // useEffect(() => {
-    //     console.log(stockInputValue)
-    // }, [stockInputValue])
+    useEffect(() => {
+        console.log(selectedRetailer)
+    }, [selectedRetailer])
 
     const postAndPutRetailers = () => {
         fetch(`${api}api/masters/retailers`, {
@@ -372,12 +396,30 @@ const RetailersMaster = () => {
             }).catch(e => console.error(e))
     }
 
+    const verifyRetailerLocation = (id) => {
+        fetch(`${api}api/masters/retailerLocation`, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ Id: id })
+        }).then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    toast.success(data?.message)
+                } else {
+                    toast.error(data?.message)
+                }
+            }).catch(e => console.error(e))
+    }
+
+
     return (
         <>
 
             <Card sx={{ mb: 1 }} >
-                <div className="p-3 pb-0 d-flex align-items-center">
-                    <h6 className="flex-grow-1 fa-18">Retailers</h6>
+                <div className="p-3 pb-0 d-flex align-items-center justify-content-between">
+                    <h6 className="fa-18">Retailers</h6>
                     <Button variant='outlined' startIcon={<Add />} onClick={() => setDialog(true)}>Add Retailers</Button>
                 </div>
 
@@ -385,7 +427,7 @@ const RetailersMaster = () => {
 
                     <div className="row mb-3">
 
-                        <div className="col-md-4 col-sm-6">
+                        <div className="col-xl-3 col-md-4 col-sm-6">
                             <label>Area</label>
                             <Select
                                 value={{ value: filters?.area, label: filters?.areaGet }}
@@ -400,7 +442,7 @@ const RetailersMaster = () => {
                             />
                         </div>
 
-                        <div className="col-md-4 col-sm-6">
+                        <div className="col-xl-3 col-md-4 col-sm-6">
                             <label>Retailer</label>
                             <Select
                                 value={{ value: filters?.cust, label: filters?.custGet }}
@@ -510,6 +552,79 @@ const RetailersMaster = () => {
                         <Button type="submit" variant='contained' color='success' >confirm</Button>
                     </DialogActions>
                 </form>
+            </Dialog>
+
+            <Dialog
+                open={multipleLocationDialogs}
+                onClose={closeMultipleLocationDialog}
+                maxWidth='md'
+                fullWidth
+            >
+
+                <DialogTitle>Verify Location For <span className="text-primary">{selectedRetailer?.Retailer_Name}</span></DialogTitle>
+
+                <DialogContent className="pb-0">
+                    <div className="table-responsive mb-0">
+                        <table className="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th className="text-center fa-14 border-0">Active</th>
+                                    <th className="text-center fa-14 border-0">Created By</th>
+                                    <th className="text-center fa-14 border-0">Date</th>
+                                    <th className="text-center fa-14 border-0">Latitude</th>
+                                    <th className="text-center fa-14 border-0">Longitude</th>
+                                    <th className="text-center fa-14 border-0">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {selectedRetailer?.AllLocations?.map((o, i) => (
+                                    <tr key={i}>
+                                        <td className="text-center fa-13 p-3 border-0">
+                                            <input
+                                                type="radio"
+                                                name="location_list"
+                                                defaultChecked={Number(o?.isActiveLocation) === 1}
+                                                style={{ width: '20px', height: '20px' }}
+                                                onChange={e => verifyRetailerLocation(o?.Id)}
+                                            />
+                                        </td>
+                                        <td className="text-center fa-14 fw-bold p-3 border-0">{o?.EntryByGet}</td>
+                                        <td className="text-center fa-13 p-3 border-0">
+                                            {o?.EntryAt ? new Date(o?.EntryAt).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year:'numeric', hour: '2-digit', minute: '2-digit'}) : ' -'}
+                                        </td>
+                                        <td className="text-center fa-13 p-3 border-0">{o?.latitude}</td>
+                                        <td className="text-center fa-13 p-3 border-0">{o?.longitude}</td>
+                                        <td className="text-center fa-13 p-3 border-0">
+                                            <IconButton className="me-2" size="small">
+                                                <Delete className="fa-20" color='error' />
+                                            </IconButton>
+
+                                            {(o?.latitude && o.longitude) && (
+                                                <Tooltip title='Open in Google Map'>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${o?.latitude},${o?.longitude}`, '_blank')}
+                                                        className="btn btn-info fa-14" color='primary'>
+                                                        <LocationOn />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+
+
+                    {/* {selectedRetailer?.} */}
+                </DialogContent>
+
+                <DialogActions>
+                    <Button variant='outlined' onClick={closeMultipleLocationDialog}>cancel</Button>
+                </DialogActions>
             </Dialog>
         </>
     )

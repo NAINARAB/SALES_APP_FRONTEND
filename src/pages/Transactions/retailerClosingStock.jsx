@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import { LocalDate } from "../functions";
 
 
 const RetailerClosingStock = () => {
@@ -485,8 +486,25 @@ const RetailerClosingStock = () => {
                                                                     Number(ooo?.Product_Id) === Number(oo?.Product_Id))?.ST_Qty
                                                                 || ''
                                                             )}
-                                                            placeholder={getClosingStockCount(oo?.Product_Id)}
+                                                        // placeholder={getClosingStockCount(oo?.Product_Id)}
                                                         />
+                                                        <label className=" text-muted fa-13">
+                                                            {
+                                                                getClosingStockCountNumber(oo?.Product_Id)
+                                                                    ? (
+                                                                        <>
+                                                                            Last Closingstock At:&nbsp;
+                                                                            <span className="me-2">
+                                                                                {LocalDate(getClosingStockDate(oo?.Product_Id))}
+                                                                            </span>
+                                                                            <span className="text-primary ">
+                                                                                ( {getClosingStockCountNumber(oo?.Product_Id)} )
+                                                                            </span>
+                                                                        </>
+                                                                    )
+                                                                    : ''
+                                                            }
+                                                        </label>
                                                     </div>
                                                 </CardContent>
 

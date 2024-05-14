@@ -3,6 +3,7 @@ import Users from "./pages/Masters/users";
 import RetailersMaster from "./pages/Masters/retailers";
 import ProductsMaster from "./pages/Masters/products";
 import RetailerClosingStock from "./pages/Transactions/retailerClosingStock";
+import VisitedLogs from "./pages/Tracking/visitLogs";
 
 export const routes = [
     {
@@ -24,5 +25,9 @@ export const routes = [
     {
         path: '/transaction/retailerClosingStock',
         comp: <RetailerClosingStock />
+    },
+    {
+        path: '/tracking/visitLogs',
+        comp: <VisitedLogs />
     },
 ]

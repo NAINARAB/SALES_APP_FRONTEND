@@ -6,6 +6,7 @@ import { Edit, Add, AddPhotoAlternate } from "@mui/icons-material";
 import '../common.css'
 import { api } from "../../host";
 import { toast } from 'react-toastify';
+import ImagePreviewDialog from "../AppLayout/imagePreview";
 
 const ProductsMaster = () => {
     const [products, setProducts] = useState([]);
@@ -50,11 +51,13 @@ const ProductsMaster = () => {
             name: 'Picture',
             cell: (row) => (
                 <span className="py-1">
-                    <img
-                        src={row?.productImageUrl}
-                        alt={'Picture'}
-                        style={{ height: 150, width: 150 }}
-                    />
+                    <ImagePreviewDialog url={row?.productImageUrl}>
+                        <img
+                            src={row?.productImageUrl}
+                            alt={'Picture'}
+                            style={{ height: 150, width: 150 }}
+                        />
+                    </ImagePreviewDialog>
                     <span style={{ position: 'absolute', top: 0, right: 0 }}>
                         <IconButton
                             onClick={() => {
@@ -102,6 +105,7 @@ const ProductsMaster = () => {
                     </div>
                 </div>
             ),
+            minWidth: '450px'
         },
     ]
 
