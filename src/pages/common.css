@@ -2,6 +2,14 @@ p, h6, h5, h4, h3, h2, h1 {
   margin: 0 !important;
 }
 
+.theme-color {
+  color: #6b9080f8 !important;
+}
+
+.theme-bg {
+  background-color: #6b9080f8 !important;
+}
+
 
 .tab-container {
     overflow-x: auto;
@@ -297,6 +305,14 @@ p, h6, h5, h4, h3, h2, h1 {
     content: none !important;
   } */
   
+  .green-indicator {
+    /* padding: 0px 4px; */
+    height: 10px;
+    width: 10px;
+    color: #2ecc71;
+    background-color: #2ecc71;
+    border-radius: 50%;
+  }
   
   
   @media only screen and (min-width: 991px) {

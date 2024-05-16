@@ -26,6 +26,10 @@ const isLesserNumber = (a, b) => {
     return Number(a) < Number(b)
 }
 
+const NumberFormat = (num) => {
+    return Number(num).toLocaleString('en-IN', { maximumFractionDigits: 2 })
+}
+
 
 export {
     LocalDate,
@@ -34,4 +38,5 @@ export {
     isEqualNumber,
     isGraterNumber,
     isLesserNumber,
+    NumberFormat,
 }

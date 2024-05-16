@@ -4,6 +4,7 @@ import RetailersMaster from "./pages/Masters/retailers";
 import ProductsMaster from "./pages/Masters/products";
 import RetailerClosingStock from "./pages/Transactions/retailerClosingStock";
 import VisitedLogs from "./pages/Tracking/visitLogs";
+import SaleOrderCreation from "./pages/Sales/saleOrderCreation";
 
 export const routes = [
     {
@@ -29,5 +30,9 @@ export const routes = [
     {
         path: '/tracking/visitLogs',
         comp: <VisitedLogs />
+    },
+    {
+        path: '/sales/saleOrder',
+        comp: <SaleOrderCreation />
     },
 ]

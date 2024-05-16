@@ -1,7 +1,7 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { IconButton, Collapse, Tooltip } from '@mui/material';
-import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, Chat, TaskAlt, Tune, BarChart, Home, TwoWheeler, Payments } from '@mui/icons-material'
+import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, TaskAlt, Tune, BarChart, Home, TwoWheeler, Payments, SellOutlined } from '@mui/icons-material'
 // import { GrAnalytics } from "react-icons/gr";
 import "./layout.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
@@ -42,7 +42,7 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
             },
             {
                 id: 5,
-                IconComp: <Chat className="me-2 fa-20" />
+                IconComp: <SellOutlined className="me-2 fa-20" />
             },
             {
                 id: 6,

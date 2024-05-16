@@ -10,14 +10,14 @@ import { toast } from 'react-toastify';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { LocalDate } from "../functions";
+import { isGraterNumber, LocalDate } from "../functions";
 
 
 const RetailerClosingStock = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
     const [retailers, setRetailers] = useState([]);
-    const [retailerInfo, setRetailerInfo] = useState({});
     const [products, setProducts] = useState([]);
+    const [retailerInfo, setRetailerInfo] = useState({});
     const [productClosingStock, setProductClosingStock] = useState([]);
     const [filteredProductClosingStock, setFilteredProductClosingStock] = useState([])
     const [tabValue, setTabValue] = useState('1');
@@ -43,6 +43,7 @@ const RetailerClosingStock = () => {
         Product_Stock_List: [],
         ST_Id: ''
     }
+
     const [stockInputValue, setStockInputValue] = useState(initialStockValue)
     const [closingStockValues, setClosingStockValues] = useState([]);
     const [isEdit, setIsEdit] = useState(false);
@@ -66,7 +67,7 @@ const RetailerClosingStock = () => {
                 }
             }).catch(e => console.error(e))
 
-    }, [])
+    }, [storage?.Company_id])
 
     useEffect(() => {
         if (stockInputValue?.Retailer_Id) {
@@ -417,7 +418,7 @@ const RetailerClosingStock = () => {
                     {isEdit ? 'Modify' : 'Add'} Closing Stock For
                     <span className="ps-1 text-primary">{stockInputValue?.Retailer_Name}</span>
                 </DialogTitle>
-                <DialogContent>
+                <DialogContent className="bg-light">
 
                     <div className="col-xl-3 col-sm-4 mb-4">
                         <label>Date</label>
@@ -464,7 +465,14 @@ const RetailerClosingStock = () => {
                                                 />
 
                                                 <CardContent sx={{ flexGrow: '1' }}>
-                                                    <h6>{oo?.Product_Name}</h6>
+                                                    <h6 className={isGraterNumber(getClosingStockCountNumber(oo?.Product_Id) || 0, 0) && 'text-primary'}>
+                                                        {/* {isGraterNumber(getClosingStockCountNumber(oo?.Product_Id) || 0, 0)
+                                                            ? <div className="green-indicator"></div>
+                                                            : null
+                                                        } */}
+
+                                                        {oo?.Product_Name}
+                                                    </h6>
                                                     <p>{oo?.Product_Description + " - " + oo?.UOM}</p>
 
                                                     <div className="py-2">
@@ -486,14 +494,13 @@ const RetailerClosingStock = () => {
                                                                     Number(ooo?.Product_Id) === Number(oo?.Product_Id))?.ST_Qty
                                                                 || ''
                                                             )}
-                                                        // placeholder={getClosingStockCount(oo?.Product_Id)}
                                                         />
                                                         <label className=" text-muted fa-13">
                                                             {
                                                                 getClosingStockCountNumber(oo?.Product_Id)
                                                                     ? (
                                                                         <>
-                                                                            Last Closingstock At:&nbsp;
+                                                                            Previous:&nbsp;
                                                                             <span className="me-2">
                                                                                 {LocalDate(getClosingStockDate(oo?.Product_Id))}
                                                                             </span>
@@ -527,7 +534,7 @@ const RetailerClosingStock = () => {
                     </div>
 
                 </DialogContent>
-                <DialogActions className="bg-light">
+                <DialogActions>
                     <Button onClick={closeStockDialog}>cancel</Button>
                     <Button variant='contained' color='success' onClick={postClosingStock}>confirm</Button>
                 </DialogActions>

@@ -103,7 +103,7 @@ function App() {
                 <Route path="/invalid-credentials" element={(
                   <>
                     <div className="d-flex flex-column align-items-center justify-content-center p-5">
-                      <h5>You are not authorized user☹️</h5>
+                      <h5 className="mb-2">You are not authorized user☹️</h5>
                       <button
                         className="btn btn-primary rounded-5 px-5"
                         onClick={() => window.location.reload()}
@@ -117,7 +117,7 @@ function App() {
                 <Route path="*" element={(
                   <>
                     <div className="d-flex flex-column align-items-center justify-content-center p-5">
-                      <h5>404 Page Not Found ☹️</h5>
+                      <h5 className="mb-2">404 Page Not Found ☹️</h5>
                       <button
                         className="btn btn-primary rounded-5 px-5"
                         onClick={() => window.location.reload()}
