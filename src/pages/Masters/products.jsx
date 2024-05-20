@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import ImagePreviewDialog from "../AppLayout/imagePreview";
 
 const ProductsMaster = () => {
+    const storage = JSON.parse(localStorage.getItem('user'));
     const [products, setProducts] = useState([]);
     const [reload, setReload] = useState(false);
     const [filteredData, setFilteredData] = useState([]);
@@ -37,14 +38,14 @@ const ProductsMaster = () => {
     const [productInputValue, setProductInputValue] = useState(initialInputValue)
 
     useEffect(() => {
-        fetch(`${api}api/masters/products`)
+        fetch(`${api}api/masters/products?Company_Id=${storage?.Company_id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     setProducts(data.data)
                 }
             }).catch(e => console.error(e))
-    }, [reload])
+    }, [reload, storage?.Company_id])
 
     const productColumn = [
         {
@@ -79,9 +80,9 @@ const ProductsMaster = () => {
                 <div>
                     <h6>
                         {row?.Product_Name}
-                        <IconButton size="small">
+                        {/* <IconButton size="small">
                             <Edit sx={{ fontSize: '15px' }} />
-                        </IconButton>
+                        </IconButton> */}
                     </h6>
                     <p className="mb-2">{row?.Product_Description}</p>
 

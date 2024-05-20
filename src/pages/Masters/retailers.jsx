@@ -9,7 +9,7 @@ import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
 import { toast } from 'react-toastify';
 import ImagePreviewDialog from "../AppLayout/imagePreview";
-
+import { useLocation } from "react-router-dom";
 
 const RetailersMaster = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
@@ -33,7 +33,7 @@ const RetailersMaster = () => {
         areaGet: 'All Area',
     });
 
-    const initialStockValue = {
+    const initialRetailerInput = {
         Company_Id: storage?.Company_id,
         Retailer_Id: '',
         Retailer_Name: '',
@@ -51,9 +51,40 @@ const RetailersMaster = () => {
         Gstno: '',
         Created_By: storage?.UserId,
         Updated_By: storage?.UserId,
+        Latitude: null,
+        Longitude: null,
+        fileName: null,
+        fileType: null,
+        fileSize: null,
+        isVisitedPlace: false,
+        visitLogID: null,
     }
 
-    const [stockInputValue, setStockInputValue] = useState(initialStockValue)
+    const [retailerInput, setRetailerInput] = useState(initialRetailerInput);
+
+    const location = useLocation();
+    const retailerFromVisitLog = location.state?.retailer
+
+    useEffect(() => {
+        if (retailerFromVisitLog) {
+            const { Reatailer_Name, Contact_Person, Contact_Mobile, Location_Address, Latitude, Longitude, ImageName, ImageType, ImageSize, Id } = retailerFromVisitLog
+            setRetailerInput({
+                ...retailerInput,
+                Retailer_Name: Reatailer_Name,
+                Contact_Person: Contact_Person,
+                Mobile_No: Contact_Mobile,
+                Reatailer_Address: Location_Address,
+                Latitude: Latitude,
+                Longitude: Longitude,
+                fileName: ImageName,
+                fileSize: ImageSize,
+                fileType: ImageType,
+                visitLogID: Id,
+                isVisitedPlace: true
+            });
+            setDialog(true);
+        }
+    }, [retailerFromVisitLog])
 
     useEffect(() => {
         fetch(`${api}api/masters/retailers?Company_Id=${storage?.Company_id}`)
@@ -154,7 +185,7 @@ const RetailersMaster = () => {
                                     Retailer_Channel_Id, Retailer_Class, Route_Id, Area_Id, Reatailer_Address,
                                     Reatailer_City, PinCode, State_Id, Gstno,
                                 } = row;
-                                setStockInputValue(pre => ({
+                                setRetailerInput(pre => ({
                                     ...pre,
                                     Company_Id, Retailer_Id, Retailer_Name, Contact_Person, Mobile_No,
                                     Retailer_Channel_Id, Retailer_Class, Route_Id, Area_Id, Reatailer_Address,
@@ -237,7 +268,7 @@ const RetailersMaster = () => {
 
     const closeDialog = () => {
         setDialog(false);
-        setStockInputValue(initialStockValue);
+        setRetailerInput(initialRetailerInput);
         setIsEdit(false)
     }
 
@@ -252,7 +283,7 @@ const RetailersMaster = () => {
     }
 
     const setValue = (key, value) => {
-        setStockInputValue({ ...stockInputValue, [key]: value });
+        setRetailerInput({ ...retailerInput, [key]: value });
     }
 
     const input = [
@@ -262,7 +293,7 @@ const RetailersMaster = () => {
             placeholder: "",
             event: (e) => setValue('Retailer_Name', e.target.value),
             required: true,
-            value: stockInputValue.Retailer_Name,
+            value: retailerInput.Retailer_Name,
         },
         {
             label: 'Contact Person Name',
@@ -270,7 +301,7 @@ const RetailersMaster = () => {
             placeholder: "",
             event: (e) => setValue('Contact_Person', e.target.value),
             required: true,
-            value: stockInputValue.Contact_Person,
+            value: retailerInput.Contact_Person,
         },
         {
             label: 'Mobile Number',
@@ -279,7 +310,7 @@ const RetailersMaster = () => {
             oninput: (e) => onlynum(e),
             event: (e) => setValue('Mobile_No', e.target.value),
             required: true,
-            value: stockInputValue.Mobile_No,
+            value: retailerInput.Mobile_No,
             // minLength: 10,
             maxLength: 10,
         },
@@ -288,7 +319,7 @@ const RetailersMaster = () => {
             elem: 'input',
             placeholder: "",
             event: (e) => setValue('Gstno', e.target.value),
-            value: stockInputValue.Gstno,
+            value: retailerInput.Gstno,
             maxLength: 15,
         },
         {
@@ -300,7 +331,7 @@ const RetailersMaster = () => {
             ],
             event: (e) => setValue('Retailer_Channel_Id', e.target.value),
             required: true,
-            value: stockInputValue.Retailer_Channel_Id,
+            value: retailerInput.Retailer_Channel_Id,
         },
         {
             label: 'Retailer Class',
@@ -313,7 +344,7 @@ const RetailersMaster = () => {
             ],
             event: (e) => setValue('Retailer_Class', e.target.value),
             required: true,
-            value: stockInputValue.Retailer_Class,
+            value: retailerInput.Retailer_Class,
         },
         {
             label: 'Route',
@@ -323,7 +354,7 @@ const RetailersMaster = () => {
                 ...routes?.map(o => ({ value: o?.Route_Id, label: o?.Route_Name }))
             ],
             event: (e) => setValue('Route_Id', e.target.value),
-            value: stockInputValue.Route_Id,
+            value: retailerInput.Route_Id,
             required: true
         },
         {
@@ -335,13 +366,13 @@ const RetailersMaster = () => {
             ],
             event: (e) => setValue('Area_Id', e.target.value),
             required: true,
-            value: stockInputValue.Area_Id,
+            value: retailerInput.Area_Id,
         },
         {
             label: 'City',
             elem: 'input',
             event: (e) => setValue('Reatailer_City', e.target.value),
-            value: stockInputValue.Reatailer_City,
+            value: retailerInput.Reatailer_City,
         },
         {
             label: 'Pincode',
@@ -349,7 +380,7 @@ const RetailersMaster = () => {
             placeholder: "",
             oninput: (e) => onlynum(e),
             event: (e) => setValue('PinCode', e.target.value),
-            value: stockInputValue.PinCode,
+            value: retailerInput.PinCode,
             maxLength: 6
         },
         {
@@ -361,14 +392,14 @@ const RetailersMaster = () => {
             ],
             event: (e) => setValue('State_Id', e.target.value),
             required: true,
-            value: stockInputValue.State_Id,
+            value: retailerInput.State_Id,
         },
         {
             label: 'Address',
             elem: 'textarea',
             event: (e) => setValue('Reatailer_Address', e.target.value),
             required: true,
-            value: stockInputValue.Reatailer_Address,
+            value: retailerInput.Reatailer_Address,
         },
     ];
 
@@ -377,12 +408,12 @@ const RetailersMaster = () => {
     }, [selectedRetailer])
 
     const postAndPutRetailers = () => {
-        fetch(`${api}api/masters/retailers`, {
+        fetch(`${retailerInput.isVisitedPlace === false ? api + 'api/masters/retailers' : api + 'api/masters/retailer/convertAsRetailer'}`, {
             method: isEdit ? 'PUT' : 'POST',
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(stockInputValue)
+            body: JSON.stringify(retailerInput)
         })
             .then(res => res.json())
             .then(data => {
@@ -492,7 +523,7 @@ const RetailersMaster = () => {
                     <IconButton size="small" onClick={closeDialog} className="me-2">
                         <ArrowBack />
                     </IconButton>
-                    {isEdit ? 'Modify Retailer ' + stockInputValue?.Retailer_Name : 'Create Retailer'}
+                    {isEdit ? 'Modify Retailer ' + retailerInput?.Retailer_Name : 'Create Retailer'}
                 </DialogTitle>
                 <form onSubmit={e => {
                     e.preventDefault();
@@ -590,7 +621,7 @@ const RetailersMaster = () => {
                                         </td>
                                         <td className="text-center fa-14 fw-bold p-3 border-0">{o?.EntryByGet}</td>
                                         <td className="text-center fa-13 p-3 border-0">
-                                            {o?.EntryAt ? new Date(o?.EntryAt).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year:'numeric', hour: '2-digit', minute: '2-digit'}) : ' -'}
+                                            {o?.EntryAt ? new Date(o?.EntryAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ' -'}
                                         </td>
                                         <td className="text-center fa-13 p-3 border-0">{o?.latitude}</td>
                                         <td className="text-center fa-13 p-3 border-0">{o?.longitude}</td>

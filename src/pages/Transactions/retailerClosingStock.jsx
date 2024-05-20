@@ -29,7 +29,7 @@ const RetailerClosingStock = () => {
     const [filters, setFilters] = useState({
         cust: '',
         custGet: 'Select Retailer',
-        Fromdate: new Date(new Date().setDate(new Date().getDate() - 100)).toISOString().split('T')[0],
+        Fromdate: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString().split('T')[0],
         Todate: new Date().toISOString().split('T')[0],
     });
 
@@ -59,7 +59,7 @@ const RetailerClosingStock = () => {
                 }
             }).catch(e => console.error(e))
 
-        fetch(`${api}api/masters/products/grouped`)
+        fetch(`${api}api/masters/products/grouped?Company_Id=${storage?.Company_id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -387,6 +387,7 @@ const RetailerClosingStock = () => {
                                         <tr>
                                             <th className="fa-14 border">Sno</th>
                                             <th className="fa-14 border">Product Name</th>
+                                            <th className="fa-14 border">Date</th>
                                             <th className="fa-14 border">Quantity</th>
                                         </tr>
                                     </thead>
@@ -395,6 +396,7 @@ const RetailerClosingStock = () => {
                                             <tr key={i}>
                                                 <td className="fa-14 border">{i + 1}</td>
                                                 <td className="fa-14 border">{o?.Product_Name}</td>
+                                                <td className="fa-14 border">{LocalDate(o?.Cl_Date)}</td>
                                                 <td className="fa-14 border">{o?.Previous_Balance}</td>
                                             </tr>
                                         ))}
@@ -466,11 +468,6 @@ const RetailerClosingStock = () => {
 
                                                 <CardContent sx={{ flexGrow: '1' }}>
                                                     <h6 className={isGraterNumber(getClosingStockCountNumber(oo?.Product_Id) || 0, 0) && 'text-primary'}>
-                                                        {/* {isGraterNumber(getClosingStockCountNumber(oo?.Product_Id) || 0, 0)
-                                                            ? <div className="green-indicator"></div>
-                                                            : null
-                                                        } */}
-
                                                         {oo?.Product_Name}
                                                     </h6>
                                                     <p>{oo?.Product_Description + " - " + oo?.UOM}</p>

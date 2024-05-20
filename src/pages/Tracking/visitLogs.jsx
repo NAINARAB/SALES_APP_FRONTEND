@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { IconButton, Card, CardContent, Tooltip } from "@mui/material";
-import { Launch } from "@mui/icons-material";
+import { Launch, LocationOn, PersonAdd } from "@mui/icons-material";
 import '../common.css'
 import Select from "react-select";
 import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
 // import { toast } from 'react-toastify';
-import { ISOString } from "../functions";
+import { ISOString, LocalDate, LocalDateWithTime, LocalTime } from "../functions";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
 import ImagePreviewDialog from "../AppLayout/imagePreview";
+import { useNavigate } from "react-router-dom";
 
 const VisitedLogs = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
+    const nav = useNavigate()
 
     const [logData, setLogData] = useState([]);
     const [salesPerson, setSalePerson] = useState([]);
@@ -63,15 +65,15 @@ const VisitedLogs = () => {
         {
             name: 'Retailer Info',
             cell: row => (
-                <div className="py-2">
+                <div className="py-2 w-100">
                     <h6>
-                        Visited By: {row?.EntryByGet}
+                        {row?.EntryByGet}, {LocalTime(row?.EntryAt)}
                     </h6>
-                    <p className="mb-2">{row?.Narration}</p>
+                    <p className="mb-2">{row?.Narration && ('Narration: ' + row?.Narration)}</p>
 
-                    <div className="table-responisve">
+                    <div className="table-responisve rounded-3 border p-2">
                         <table className="mb-0">
-                            <tbody>
+                            <tbody >
                                 <tr>
                                     <td className="border-0">Reatailer </td>
                                     <td className="border-0">
@@ -97,13 +99,34 @@ const VisitedLogs = () => {
                                     <td className="border-0">Location </td>
                                     <td className="border-0">
                                         {row?.Latitude + ', ' + row?.Longitude}
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Actions</td>
+                                    <td className="border-0" >
                                         {(row?.Latitude && row.Longitude) && (
                                             <Tooltip title='Open in Google Map'>
                                                 <IconButton
                                                     size="small"
                                                     onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${row?.Latitude},${row?.Longitude}`, '_blank')}
-                                                    className="btn btn-info" color='primary'>
-                                                    <Launch className="fa-18" />
+                                                    color='primary'>
+                                                    <LocationOn className="fa-18" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                        {!Boolean(row?.IsExistingRetailer) && (
+                                            <Tooltip title='Convert as a Retailer'>
+                                                <IconButton
+                                                    color='primary'
+                                                    size="small"
+                                                    onClick={() => nav('/masters/retailers', {
+                                                        state: {
+                                                            retailer: row
+                                                        }
+                                                    })}
+                                                >
+                                                    <PersonAdd />
                                                 </IconButton>
                                             </Tooltip>
                                         )}

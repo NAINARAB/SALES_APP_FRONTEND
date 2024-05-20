@@ -5,7 +5,7 @@ import Select from "react-select";
 import { api } from "../../host";
 import { customSelectStyles } from "../tableColumns";
 import { toast } from 'react-toastify';
-import { isGraterNumber, ISOString } from "../functions";
+import { isEqualNumber, isGraterNumber, ISOString } from "../functions";
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
@@ -28,13 +28,14 @@ const SaleOrderCreation = () => {
         So_Date: ISOString(),
         Retailer_Id: '',
         Retailer_Name: 'Select',
-        Sales_Person_Id: '',
-        Sales_Person_Name: 'Select',
+        Sales_Person_Id: storage?.UserId,
+        Sales_Person_Name: storage?.Name,
         Branch_Id: storage?.BranchId,
         Narration: '',
         Created_by: storage?.UserId,
         Product_Array: [],
-        So_Id: ''
+        So_Id: '',
+        TaxType: 0,
     }
 
     const [orderDetails, setOrderDetails] = useState(initialValue)
@@ -51,7 +52,7 @@ const SaleOrderCreation = () => {
                 }
             }).catch(e => console.error(e))
 
-        fetch(`${api}api/masters/products/grouped`)
+        fetch(`${api}api/masters/products/grouped?Company_Id=${storage?.Company_id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -69,22 +70,24 @@ const SaleOrderCreation = () => {
 
     }, [storage?.Company_id])
 
-    const handleStockInputChange = (productId, value, rate) => {
+    const handleStockInputChange = (productId, value, rate, obj) => {
         const productIndex = orderProducts.findIndex(item => item.Item_Id === productId);
 
         if (productIndex !== -1) {
             const updatedValues = [...orderProducts];
-            updatedValues[productIndex].Bill_Qty = value;
-            updatedValues[productIndex].Item_Rate = rate
+            updatedValues[productIndex].Bill_Qty = Number(value);
+            updatedValues[productIndex].Item_Rate = Number(rate);
+            updatedValues[productIndex] = {...updatedValues[productIndex], Product: obj }
+            console.log({...updatedValues[productIndex]})
 
             setOrderProducts(updatedValues);
         } else {
-            setOrderProducts(prevValues => [...prevValues, { Item_Id: productId, Bill_Qty: value, Item_Rate: rate }]);
+            setOrderProducts(prevValues => [...prevValues, { Item_Id: productId, Bill_Qty: Number(value), Item_Rate: Number(rate), Product: obj }]);
         }
     };
 
     const postSaleOrder = () => {
-        if (orderProducts?.length > 0 && orderDetails?.Retailer_Id) {
+        if (orderProducts?.length > 0 && orderDetails?.Retailer_Id && isGraterNumber(orderProducts[0]?.Bill_Qty, 0)) {
             fetch(`${api}api/sales/saleOrder`, {
                 method: isEdit ? 'PUT' : 'POST',
                 headers: {
@@ -114,6 +117,9 @@ const SaleOrderCreation = () => {
             if (!orderDetails?.Retailer_Id) {
                 return toast.error('Select Retailer')
             }
+            if (isEqualNumber(0, orderProducts[0]?.Bill_Qty)) {
+                return toast.error('Enter any one product quantity')
+            }
         }
     }
 
@@ -127,7 +133,7 @@ const SaleOrderCreation = () => {
                     <h6 className="fa-18">Sale Order</h6>
                 </div>
 
-                <CardContent style={{ maxHeight: '68vh', overflow: 'auto' }}>
+                <CardContent style={{ maxHeight: '74vh', overflow: 'auto' }}>
 
                     <div className="row">
                         <div className="col-xl-3 col col-sm-4 mb-4">
@@ -161,7 +167,7 @@ const SaleOrderCreation = () => {
                                 value={{ value: orderDetails?.Sales_Person_Id, label: orderDetails?.Sales_Person_Name }}
                                 onChange={(e) => setOrderDetails({ ...orderDetails, Sales_Person_Id: e.value, Sales_Person_Name: e.label })}
                                 options={[
-                                    { value: '', label: 'Select' },
+                                    { value: initialValue?.Sales_Person_Id, label: initialValue?.Sales_Person_Name },
                                     ...salesPerson.map(obj => ({ value: obj?.UserId, label: obj?.Name }))
                                 ]}
                                 styles={customSelectStyles}
@@ -169,6 +175,15 @@ const SaleOrderCreation = () => {
                                 placeholder={"Sales Person Name"}
                             />
                         </div>
+
+                        {/* <div className="col-xl-3 col-sm-4 mb-4">
+                            <label>Tax Type</label>
+                            <select className="cus-inpt" onChange={e => setOrderDetails({...orderDetails, TaxType: Number(e.target.value)})}>
+                                <option value={0}>Inclusive Tax</option>
+                                <option value={1}>Exclusive Tax</option>
+                            </select>
+                        </div> */}
+
                     </div>
 
                     <TabContext value={tabValue}>
@@ -219,7 +234,8 @@ const SaleOrderCreation = () => {
                                                                 handleStockInputChange(
                                                                     oo?.Product_Id,
                                                                     e.target.value,
-                                                                    oo?.Item_Rate
+                                                                    oo?.Item_Rate,
+                                                                    oo
                                                                 )
                                                             }
                                                             value={(
@@ -238,19 +254,18 @@ const SaleOrderCreation = () => {
                     </TabContext>
 
                 </CardContent>
-                <CardActions className="d-flex justify-content-between align-items-center bg-light">
+                <CardActions className="d-flex align-items-center bg-light">
 
-                    <div className="col-lg-6 col-md-6 col-sm-10 col-9">
+                    <div className=" flex-grow-1">
                         <input
                             className="cus-inpt bg-white"
                             onChange={e => setOrderDetails({ ...orderDetails, Narration: e.target.value })}
                             value={orderDetails?.Narration}
                             placeholder="Discribtion"
-                            // rows={4}
                         />
                     </div>
                     <InvoiceBillTemplate orderDetails={orderDetails} orderProducts={orderProducts} postFun={postSaleOrder}>
-                        <Button  variant='contained' color='primary' startIcon={<Visibility />}>Preview</Button>
+                        <Button  variant='contained' color='primary' startIcon={<Visibility />} >Preview</Button>
                     </InvoiceBillTemplate>
                     
                 </CardActions>

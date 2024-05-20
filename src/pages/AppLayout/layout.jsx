@@ -61,6 +61,7 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
 
     return Number(mainBtn.Read_Rights) === 1 && (
         <>
+
             <button className={page.Main_Menu_Id === mainBtn.Main_Menu_Id ? "sidebutton btn-active" : 'sidebutton'}
                 onClick={
                     mainBtn?.PageUrl !== ""
@@ -71,7 +72,6 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
                             setLoclStoreage(mainBtn.Main_Menu_Id, 1)
                         }
                         : () => setOpen(!open)}
-
             >
                 <span className="flex-grow-1 d-flex justify-content-start">
                     {getIcon()}
@@ -79,6 +79,7 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
                 </span>
                 {mainBtn?.PageUrl === "" && <span className=" text-end">{open ? <KeyboardArrowDown /> : <KeyboardArrowRight />}</span>}
             </button>
+
             {mainBtn?.PageUrl === ""
                 && (
                     <Collapse in={open} timeout="auto" unmountOnExit >
@@ -209,7 +210,7 @@ function MainComponent(props) {
                                 page={contextObj}
                                 setPage={setContextObj} />
                         ))}
-                        
+
                     </div>
                     <div className="sidebar-bottom">
                         <button className="logout-btn" onClick={props.logout}>
@@ -233,7 +234,7 @@ function MainComponent(props) {
 
                             <div className="ms-2 flex-grow-1 d-flex flex-column">
                                 <span className="flex-grow-1">Welcome {parseData?.Name + " !"}</span>
-                                <span className="text-muted fa-12">Login Time: {}</span>
+                                <span className="text-muted fa-12">Login Time: { }</span>
                             </div>
 
                             <Tooltip title="Logout">
@@ -242,6 +243,7 @@ function MainComponent(props) {
 
 
                         </div>
+                        
                     </div>
 
                     <div className="content-body">
@@ -271,6 +273,7 @@ function MainComponent(props) {
                             </div>
                         )}
                     </div>
+
                 </div>
             </div>
 
