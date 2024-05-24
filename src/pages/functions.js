@@ -14,6 +14,11 @@ const LocalTime = (dateObj) => {
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
+const getPreviousDate = (days) => {
+    const num = days ? Number(days) : 1;
+    return new Date(new Date().setDate(new Date().getDate() - num)).toISOString().split('T')[0]
+}
+
 const ISOString = (dateObj) => {
     const receivedDate = dateObj ? new Date(dateObj) : new Date();
     return receivedDate.toISOString().split('T')[0]
@@ -67,9 +72,14 @@ const numberToWords = (prop) => {
     }
 }
 
+function isValidObject(obj) {
+    return Object.keys(obj).length !== 0;
+}
+
 export {
     LocalDate,
     LocalDateWithTime,
+    getPreviousDate,
     ISOString,
     isEqualNumber,
     isGraterNumber,
@@ -77,4 +87,5 @@ export {
     NumberFormat,
     numberToWords,
     LocalTime,
+    isValidObject,
 }

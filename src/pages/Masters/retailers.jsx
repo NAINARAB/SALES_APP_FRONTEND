@@ -68,8 +68,8 @@ const RetailersMaster = () => {
     useEffect(() => {
         if (retailerFromVisitLog) {
             const { Reatailer_Name, Contact_Person, Contact_Mobile, Location_Address, Latitude, Longitude, ImageName, ImageType, ImageSize, Id } = retailerFromVisitLog
-            setRetailerInput({
-                ...retailerInput,
+            setRetailerInput(pre => ({
+                ...pre,
                 Retailer_Name: Reatailer_Name,
                 Contact_Person: Contact_Person,
                 Mobile_No: Contact_Mobile,
@@ -81,7 +81,7 @@ const RetailersMaster = () => {
                 fileType: ImageType,
                 visitLogID: Id,
                 isVisitedPlace: true
-            });
+            }));
             setDialog(true);
         }
     }, [retailerFromVisitLog])

@@ -6,22 +6,24 @@ import '../common.css'
 import { api } from "../../host";
 import { toast } from 'react-toastify';
 
-
-const initialState = {
-    Id: "",
-    Name: "",
-    UserName: "",
-    UserTypeId: "",
-    Password: "",
-    BranchId: "",
-    UserId: "",
-};
-
 const Users = () => {
+    const parseData = JSON.parse(localStorage.getItem('user'));
     const [usersData, setUsersData] = useState([]);
     const [screen, setScreen] = useState(false);
-    const parseData = JSON.parse(localStorage.getItem('user'));
     const [reload, setReload] = useState(false);
+
+    const initialState = {
+        Id: "",
+        Name: "",
+        UserName: "",
+        UserTypeId: "",
+        Password: "",
+        BranchId: "",
+        UserId: "",
+        Company_id: parseData?.Company_id,
+    };
+    // console.log(parseData)
+
     const [inputValue, setInputValue] = useState(initialState);
     const [editUser, setEditUser] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,7 +43,7 @@ const Users = () => {
                     setUsersData(data.data);
                 }
             }).catch(e => console.error(e));
-    }, [reload]);
+    }, [reload, parseData?.UserId, parseData?.Company_id, parseData?.BranchId]);
 
     useEffect(() => {
         fetch(`${api}api/masters/userType`)
@@ -70,12 +72,9 @@ const Users = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                UserId: inputValue.UserId,
-                Name: inputValue.Name,
-                UserName: inputValue.UserName,
-                UserTypeId: inputValue.UserTypeId,
+                ...inputValue,
+                Company_id: parseData?.Company_id,
                 Password: CryptoJS.AES.encrypt(inputValue.Password, 'ly4@&gr$vnh905RyB>?%#@-(KSMT').toString(),
-                BranchId: inputValue.BranchId,
             }),
         })
             .then((res) => res.json())
@@ -114,12 +113,9 @@ const Users = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                UserId: inputValue.UserId,
-                Name: inputValue.Name,
-                UserName: inputValue.UserName,
-                UserTypeId: inputValue.UserTypeId,
+                ...inputValue,
+                Company_id: parseData?.Company_id,
                 Password: CryptoJS.AES.encrypt(inputValue.Password, 'ly4@&gr$vnh905RyB>?%#@-(KSMT').toString(),
-                BranchId: inputValue.BranchId,
             }),
         })
             .then((res) => res.json())
@@ -224,13 +220,9 @@ const Users = () => {
                                 <table className="table">
                                     <thead>
                                         <tr>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>Sno</th>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>Name</th>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>User Type</th>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>Mobile</th>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>Company</th>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>Branch</th>
-                                            <th className="border fa-14 text-white py-3" style={{backgroundColor: '#6b9080f8'}}>Action</th>
+                                            {['Sno', 'Name', 'User Type', 'Mobile', 'Company', 'Branch', 'Action'].map(o => (
+                                                <th className="border fa-14 text-white py-3" style={{ backgroundColor: '#6b9080f8' }} key={o}>{o}</th>
+                                            ))}
                                         </tr>
                                     </thead>
                                     <tbody>

@@ -4,7 +4,8 @@ import RetailersMaster from "./pages/Masters/retailers";
 import ProductsMaster from "./pages/Masters/products";
 import RetailerClosingStock from "./pages/Transactions/retailerClosingStock";
 import VisitedLogs from "./pages/Tracking/visitLogs";
-import SaleOrderCreation from "./pages/Sales/saleOrderCreation";
+import SaleOrderList from "./pages/Sales/saleOrders";
+import StockReportAreaBased from "./pages/Reports/closingStockRepor";
 
 export const routes = [
     {
@@ -33,6 +34,10 @@ export const routes = [
     },
     {
         path: '/sales/saleOrder',
-        comp: <SaleOrderCreation />
+        comp: <SaleOrderList />
     },
+    {
+        path: '/reports/closingStock',
+        comp: <StockReportAreaBased />
+    }
 ]

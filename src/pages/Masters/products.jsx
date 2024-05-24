@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { customTableStyles } from "../tableColumns";
 import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Card, Button, Paper, CardContent } from "@mui/material";
-import { Edit, Add, AddPhotoAlternate } from "@mui/icons-material";
+import { AddPhotoAlternate } from "@mui/icons-material";
 import '../common.css'
 import { api } from "../../host";
 import { toast } from 'react-toastify';

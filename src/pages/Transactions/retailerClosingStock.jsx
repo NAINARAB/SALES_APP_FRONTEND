@@ -10,7 +10,8 @@ import { toast } from 'react-toastify';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { isGraterNumber, LocalDate } from "../functions";
+import { isGraterNumber, LocalDate, NumberFormat } from "../functions";
+import ImagePreviewDialog from "../AppLayout/imagePreview";
 
 
 const RetailerClosingStock = () => {
@@ -100,12 +101,14 @@ const RetailerClosingStock = () => {
             <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
                 <div className="row">
                     <div className="col-xl-2 col-md-3 d-flex align-items-center">
-                        <CardMedia
-                            component="img"
-                            sx={{ width: 200, height: 200 }}
-                            image={data?.imageUrl}
-                            alt="retailer_picture"
-                        />
+                        <ImagePreviewDialog url={data?.imageUrl} >
+                            <CardMedia
+                                component="img"
+                                sx={{ width: 200, height: 200 }}
+                                image={data?.imageUrl}
+                                alt="retailer_picture"
+                            />
+                        </ImagePreviewDialog>
                     </div>
 
                     <div className="col-xl-10 col-md-9 d-flex flex-column justify-content-center p-2" >
@@ -200,10 +203,10 @@ const RetailerClosingStock = () => {
         }
     }
 
-    const getClosingStockCount = (productID) => {
-        const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
-        return obj[0]?.Previous_Balance ? 'Previous: ( ' + obj[0]?.Previous_Balance + ' )' : ''
-    }
+    // const getClosingStockCount = (productID) => {
+    //     const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
+    //     return obj[0]?.Previous_Balance ? 'Previous: ( ' + obj[0]?.Previous_Balance + ' )' : ''
+    // }
 
     const getClosingStockCountNumber = (productID) => {
         const obj = productClosingStock?.filter(o => Number(o?.Item_Id) === Number(productID));
@@ -345,8 +348,10 @@ const RetailerClosingStock = () => {
 
             </div>
 
+            {/* retailer details */}
             {filters.cust && <RetailerDetails data={retailerInfo} />}
 
+            {/* closing Stock Entry */}
             {filters.cust && (
                 <>
                     <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
@@ -361,7 +366,7 @@ const RetailerClosingStock = () => {
                         </div>
 
                         {retailerInfo?.ClosingStocks?.length > 0 && (
-                            <CardContent className="pt-0" sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                            <CardContent className="pt-0" sx={{ maxHeight: '50vh', overflowY: 'auto' }}>
                                 {retailerInfo?.ClosingStocks?.map((o, i) => (
                                     <GroupByDate o={o} key={i} />
                                 ))}
@@ -372,23 +377,29 @@ const RetailerClosingStock = () => {
                 </>
             )}
 
+            {/* stock abstract */}
             {filters?.cust && (
                 <Card component={Paper} variant='outlined' sx={{ mt: 2 }}>
-                    <div className="p-3 fa-18 fw-bold">
-                        Current Stock
-                        <span style={{ fontWeight: 'normal', fontSize: '16px' }}> ( Products {filteredProductClosingStock?.length} )</span>
+                    <div className="p-3 d-flex justify-content-between fa-18 fw-bold">
+                        <span>
+                            Current Stock
+                            <span style={{ fontWeight: 'normal', fontSize: '16px' }}> ( Products {filteredProductClosingStock?.length} )</span>
+                        </span>
+                        <span>
+                            ₹ {NumberFormat(filteredProductClosingStock.reduce((sum, product) => sum + (product.Previous_Balance * product.Item_Rate), 0))}
+                        </span>
                     </div>
 
                     {filteredProductClosingStock?.length > 0 && (
-                        <CardContent sx={{ maxHeight: '65vh', overflowY: 'auto' }}>
+                        <CardContent sx={{ maxHeight: '50vh', overflowY: 'auto' }}>
                             <div className="table-responsive">
                                 <table className="table">
                                     <thead>
                                         <tr>
-                                            <th className="fa-14 border">Sno</th>
-                                            <th className="fa-14 border">Product Name</th>
-                                            <th className="fa-14 border">Date</th>
-                                            <th className="fa-14 border">Quantity</th>
+                                            {['Sno', 'Product Name', 'Date', 'Quantity', 'Rate', 'Value'].map(o => (
+                                                <th className="fa-14 border text-center" key={o}>{o}</th>
+
+                                            ))}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -396,8 +407,12 @@ const RetailerClosingStock = () => {
                                             <tr key={i}>
                                                 <td className="fa-14 border">{i + 1}</td>
                                                 <td className="fa-14 border">{o?.Product_Name}</td>
-                                                <td className="fa-14 border">{LocalDate(o?.Cl_Date)}</td>
-                                                <td className="fa-14 border">{o?.Previous_Balance}</td>
+                                                <td className="fa-14 border text-center">{LocalDate(o?.Cl_Date)}</td>
+                                                <td className="fa-14 border text-end">{NumberFormat(o?.Previous_Balance)}</td>
+                                                <td className="fa-14 border text-end">{o?.Item_Rate}</td>
+                                                <td className="fa-14 border text-end">
+                                                    {(o?.Previous_Balance && o?.Item_Rate) ? NumberFormat(o?.Item_Rate * o?.Previous_Balance) : 0}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>

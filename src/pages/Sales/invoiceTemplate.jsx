@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, Button, DialogActions } from '@mui/material';
-import { Close, Save } from '@mui/icons-material';
+import { Close, Download, Save } from '@mui/icons-material';
 import { api } from '../../host';
 import { isEqualNumber, isGraterNumber, LocalDate, NumberFormat, numberToWords } from '../functions';
-
+import { useReactToPrint } from 'react-to-print';
 
 const InvoiceBillTemplate = (props) => {
     const storage = JSON.parse(localStorage.getItem('user'));
-    const { orderDetails, orderProducts, postFun } = props;
+    const { orderDetails, orderProducts, postFun, download } = props;
     const [open, setOpen] = useState(false);
     const [products, setProducts] = useState([]);
     const [retailerInfo, setRetailerInfo] = useState({});
+    const [companyInfo, setCompanyInfo] = useState({});
+    const printRef = useRef(null)
 
     useEffect(() => {
+
         fetch(`${api}api/masters/products?Company_Id=${storage?.Company_id}`)
             .then(res => res.json())
             .then(data => {
@@ -20,16 +23,27 @@ const InvoiceBillTemplate = (props) => {
                     setProducts(data.data)
                 }
             }).catch(e => console.error(e))
-    }, [storage?.Company_id])
 
-    useEffect(() => {
-        fetch(`${api}api/masters/retailers/retaileDetails?Retailer_Id=${orderDetails?.Retailer_Id}`)
+        fetch(`${api}api/masters/company/info?Company_id=${storage?.Company_id}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    setRetailerInfo(data?.data[0] ? data?.data[0] : {})
+                    setCompanyInfo(data?.data[0] ? data?.data[0] : {})
                 }
             }).catch(e => console.error(e))
+
+    }, [storage?.Company_id])
+
+    useEffect(() => {
+        if (orderDetails?.Retailer_Id) {
+            fetch(`${api}api/masters/retailers/retaileDetails?Retailer_Id=${orderDetails?.Retailer_Id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setRetailerInfo(data?.data[0] ? data?.data[0] : {})
+                    }
+                }).catch(e => console.error(e))
+        }
     }, [orderDetails?.Retailer_Id])
 
     const handleOpen = () => {
@@ -41,13 +55,17 @@ const InvoiceBillTemplate = (props) => {
     };
 
     const includedProducts = products.filter(product => {
-        return orderProducts.some(orderProduct => isEqualNumber(orderProduct?.Item_Id, product?.Product_Id) && isGraterNumber(orderProduct?.Bill_Qty, 0));
+        return orderProducts?.some(orderProduct => isEqualNumber(orderProduct?.Item_Id, product?.Product_Id) && isGraterNumber(orderProduct?.Bill_Qty, 0));
     });
 
     const total = includedProducts.reduce((total, o) => {
-        const quantity = orderProducts.find(oo => isEqualNumber(oo?.Item_Id, o?.Product_Id))?.Bill_Qty || 0;
+        const quantity = orderProducts?.find(oo => isEqualNumber(oo?.Item_Id, o?.Product_Id))?.Bill_Qty || 0;
         return total + (quantity * o?.Item_Rate);
     }, 0)
+
+    const handlePrint = useReactToPrint({
+        content: () => printRef.current,
+    });
 
     return (
         <>
@@ -57,22 +75,61 @@ const InvoiceBillTemplate = (props) => {
 
                 <DialogTitle>Order Preview</DialogTitle>
 
-                <DialogContent>
+                <DialogContent ref={printRef}>
+                    <h3 className='text-center mb-2'>Sale Order</h3>
+                    <div className="table-responsive">
+                        <table className="table mb-0">
+                            <tbody>
+                                <tr>
+                                    <td className='border border-bottom-0 border-end-0'>
+                                        <p className='fa-14'>
+                                            <span className='fw-bold'>{companyInfo?.Company_Name}</span> <br />
+                                            {companyInfo?.Region} - {companyInfo?.State} - {companyInfo?.Pincode} <br />
+                                            {companyInfo?.Company_Address}
+                                        </p>
+                                    </td>
+                                    <td className='border border-bottom-0 border-start-0 fa-14 p-1'>
+                                        <table className='table mb-0'>
+                                            <tbody>
+                                                <tr>
+                                                    <td className='border-0 p-1'>GST</td>
+                                                    <td className='border-0 p-1'>{companyInfo?.Gst_Number ? companyInfo?.Gst_Number : ' - '}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className='border-0 p-1'>Account No</td>
+                                                    <td className='border-0 p-1'>{companyInfo?.Account_Number ? companyInfo?.Account_Number : ' - '}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className='border-0 p-1'>IFSC</td>
+                                                    <td className='border-0 p-1'>{companyInfo?.IFC_Code ? companyInfo?.IFC_Code : ' - '}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className='border-0 p-1'>Bank</td>
+                                                    <td className='border-0 p-1'>{companyInfo?.Bank_Name ? companyInfo?.Bank_Name : ' - '}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div className="table-responsive">
-                        <table className="table">
+                        <table className="table mb-0">
                             <tbody>
                                 <tr>
                                     <td className='border'>
                                         <p className='fa-14'>
-                                            <span className='fw-bold'>{retailerInfo?.Retailer_Name}</span> <br/>
-                                            {retailerInfo?.Mobile_No} <br/>
+                                            <span className='fw-bold'>{retailerInfo?.Retailer_Name}</span> <br />
+                                            {retailerInfo?.Mobile_No} <br />
                                             {retailerInfo?.Reatailer_Address}
                                         </p>
                                     </td>
                                     <td className='border fa-14'>
-                                        Date: {LocalDate(orderDetails?.So_Date)} <br/>
-                                        {orderDetails?.Order_Id && <><span>Order ID: {orderDetails?.Order_Id}</span><br/></>} 
+                                        Date: {LocalDate(orderDetails?.So_Date)} <br />
+                                        {orderDetails?.Order_Id && <><span>Order ID: {orderDetails?.Order_Id}</span><br /></>}
                                         Order taken by: {orderDetails?.Sales_Person_Name}
                                     </td>
                                 </tr>
@@ -95,7 +152,7 @@ const InvoiceBillTemplate = (props) => {
                             <tbody>
 
                                 {includedProducts.map((o, i) => {
-                                    const quantity = orderProducts.find(oo => isEqualNumber(oo?.Item_Id, o?.Product_Id))?.Bill_Qty || 0;
+                                    const quantity = orderProducts?.find(oo => isEqualNumber(oo?.Item_Id, o?.Product_Id))?.Bill_Qty || 0;
                                     const amount = quantity * o?.Item_Rate;
                                     return (
                                         <tr key={i}>
@@ -140,12 +197,22 @@ const InvoiceBillTemplate = (props) => {
                             </tbody>
                         </table>
                     </div>
+
                 </DialogContent>
 
                 <DialogActions>
                     <Button startIcon={<Close />} variant='outlined' color='error' onClick={handleClose}>
                         Close
                     </Button>
+                    {download && (
+                        <Button
+                            startIcon={<Download />}
+                            variant='outlined'
+                            onClick={handlePrint}
+                        >
+                            Download
+                        </Button>
+                    )}
                     {postFun && (
                         <Button
                             startIcon={<Save />}

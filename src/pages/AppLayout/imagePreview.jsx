@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, Button, DialogActions } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { Close } from '@mui/icons-material';
 
 const ImagePreviewDialog = (props) => {
@@ -21,17 +21,20 @@ const ImagePreviewDialog = (props) => {
 
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth='lg'>
 
-                <DialogTitle className='bg-dark text-white'>Image Preview</DialogTitle>
+                <DialogTitle className='bg-dark text-white d-flex justify-content-between'>
+                    <span>Image Preview</span>
+                    <IconButton onClick={handleClose}><Close sx={{color: 'white'}} /></IconButton>
+                </DialogTitle>
 
-                <DialogContent className='bg-dark d-flex align-items-center justify-content-center'>
+                <DialogContent className='bg-dark pb-4 d-flex align-items-center justify-content-center'>
                     <img src={url} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%' }} />
                 </DialogContent>
 
-                <DialogActions className='bg-dark'>
+                {/* <DialogActions className='bg-dark'>
                     <Button startIcon={<Close />} variant='outlined' color="primary" onClick={handleClose}>
                         Close
                     </Button>
-                </DialogActions>
+                </DialogActions> */}
 
             </Dialog>
         </span>
