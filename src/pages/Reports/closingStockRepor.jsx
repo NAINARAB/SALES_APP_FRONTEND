@@ -5,7 +5,7 @@ import { api } from "../../host";
 
 // import { toast } from 'react-toastify';
 import { LocalDate, NumberFormat } from "../functions";
-import { Add, Remove} from "@mui/icons-material";
+import { Add, Remove } from "@mui/icons-material";
 
 
 
@@ -53,14 +53,11 @@ const StockReportAreaBased = () => {
                     <td className="fa-13 border">{o?.Retailer?.length}</td>
                     <td className="fa-13 border">{NumberFormat(areaValue())}</td>
                 </tr>
-
                 <tr>
                     <td colSpan={5} className="p-0 border-0">
-
                         <Collapse in={open} timeout="auto" unmountOnExit>
-
                             <div className="table-responsive my-2">
-                                <table className="table">
+                                <table className="table mb-0">
                                     <thead>
                                         <tr>
                                             {['', 'SNo', 'Retailer', 'Products', 'Value'].map((ret, ind) => (
@@ -73,7 +70,6 @@ const StockReportAreaBased = () => {
                                     </tbody>
                                 </table>
                             </div>
-
                         </Collapse>
                     </td>
                 </tr>
@@ -84,7 +80,7 @@ const StockReportAreaBased = () => {
     const RetailerList = ({ o, sno }) => {
         const [open, setOpen] = useState(false);
 
-        const overAllValue = (data) => {
+        const overAllValue = () => {
             let totalClosingStockValue = 0;
 
             o?.Closing_Stock?.forEach(stock => {
@@ -114,7 +110,7 @@ const StockReportAreaBased = () => {
                 </tr>
 
                 <tr>
-                    <td colSpan={5} className="p-0">
+                    <td colSpan={5} className="p-0 border-0">
                         <Collapse in={open} timeout="auto" unmountOnExit>
                             <div className="table-responsive my-2">
                                 <table className="table">
