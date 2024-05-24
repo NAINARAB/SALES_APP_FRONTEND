@@ -50,8 +50,8 @@ const StockReportAreaBased = () => {
                     </td>
                     <td className="fa-13 border">{sno}</td>
                     <td className="fa-13 border">{o?.Area_Name ? o?.Area_Name : 'unknown'}</td>
-                    <td className="fa-13 border">{o?.Retailer?.length}</td>
-                    <td className="fa-13 border">{NumberFormat(areaValue())}</td>
+                    <td className="fa-13 border text-center">{o?.Retailer?.length}</td>
+                    <td className="fa-13 border text-end">{NumberFormat(areaValue())}</td>
                 </tr>
                 <tr>
                     <td colSpan={5} className="p-0 border-0">
@@ -100,7 +100,7 @@ const StockReportAreaBased = () => {
                     </td>
                     <td className="fa-13 border">{sno}</td>
                     <td className="fa-13 border">
-                        <span className="fa-bold">{o?.Retailer_Name}</span> <br />
+                        <span className="fw-bold text-muted">{o?.Retailer_Name}</span> <br />
                         <span className="fa-12 text-muted">{o?.Reatailer_Address}</span>
                     </td>
                     <td className="fa-13 border">{o?.Closing_Stock?.length}</td>
@@ -172,14 +172,14 @@ const StockReportAreaBased = () => {
                             <thead>
                                 <tr>
                                     {['', 'SNo', 'Area', 'Retailers', 'Value'].map((o, i) => (
-                                        <th key={i} className="border fa-14">{o}</th>
+                                        <th key={i} className="border text-center fa-14">{o}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {stockValue?.map((o, i) => <AreaList key={i} sno={i + 1} o={o} />)}
                             </tbody>
-                        </table>
+                        </table>    
                     </div>
                 </CardContent>
             </Card>
