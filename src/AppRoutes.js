@@ -6,6 +6,7 @@ import RetailerClosingStock from "./pages/Transactions/retailerClosingStock";
 import VisitedLogs from "./pages/Tracking/visitLogs";
 import SaleOrderList from "./pages/Sales/saleOrders";
 import StockReportAreaBased from "./pages/Reports/closingStockRepor";
+import AttendanceReport from "./pages/Reports/attendanceReport";
 
 export const routes = [
     {
@@ -39,5 +40,9 @@ export const routes = [
     {
         path: '/reports/closingStock',
         comp: <StockReportAreaBased />
+    },
+    {
+        path: '/reports/attendance',
+        comp: <AttendanceReport />
     }
 ]

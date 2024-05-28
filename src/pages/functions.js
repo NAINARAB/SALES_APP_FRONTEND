@@ -40,6 +40,22 @@ const NumberFormat = (num) => {
     return Number(num).toLocaleString('en-IN', { maximumFractionDigits: 2 })
 }
 
+const Addition = (a, b) => {
+    return Number(a) + Number(b)
+}
+
+const Subraction = (a, b) => {
+    return Number(a) - Number(b)
+}
+
+const Multiplication = (a, b) => {
+    return Number(a) * Number(b)
+}
+
+const Division = (a, b) => {
+    return Number(a) / Number(b)
+}
+
 const numberToWords = (prop) => {
     const number = Number(prop)
     const singleDigits = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -88,4 +104,8 @@ export {
     numberToWords,
     LocalTime,
     isValidObject,
+    Addition,
+    Subraction,
+    Multiplication,
+    Division,
 }

@@ -89,6 +89,7 @@ function App() {
           <ContextDataProvider>
             <MainComponent logout={logout} toast={toasterFun} setLoading={setLoading}>
               <Routes>
+                
                 {routes.map((o, i) => (
                   <Route
                     key={i}
@@ -103,7 +104,7 @@ function App() {
                 <Route path="/invalid-credentials" element={(
                   <>
                     <div className="d-flex flex-column align-items-center justify-content-center p-5">
-                      <h5 className="mb-2">You are not authorized user☹️</h5>
+                      <h5 className="mb-2">You are not authorized user ☹️</h5>
                       <button
                         className="btn btn-primary rounded-5 px-5"
                         onClick={() => window.location.reload()}

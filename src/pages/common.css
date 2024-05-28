@@ -303,6 +303,11 @@ h1 {
   background: linear-gradient(to top, #f1c40f, #f39c12);
 }
 
+.tble-hed-stick {
+  position:sticky;
+  top: 0 ;
+}
+
 .hide-toggle {
   background-image: none !important;
 }

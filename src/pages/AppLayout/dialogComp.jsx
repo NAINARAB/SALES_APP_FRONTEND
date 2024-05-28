@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle, Button, DialogActions } from '@mui/
 
 const DialogComp = (props) => {
     const [open, setOpen] = useState(false);
-    const { fullScreen, fullWidth, maxWidth, Title, displayContent, closeFunction, submitFunction, submitTitle } = props;
+    const { fullWidth, maxWidth, Title, displayContent, closeFunction, submitFunction, submitTitle } = props;
 
     const handleOpen = () => {
         setOpen(true);
@@ -22,7 +22,6 @@ const DialogComp = (props) => {
                 open={open}
                 onClose={() => { handleClose(); closeFunction(); }}
                 fullWidth={fullWidth ? fullWidth : false}
-                // fullScreen={fullScreen ? fullScreen : false}
                 maxWidth={maxWidth ? maxWidth : 'md'}
             >
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
 import { Close } from '@mui/icons-material';
 
 const ImagePreviewDialog = (props) => {
@@ -17,13 +17,15 @@ const ImagePreviewDialog = (props) => {
     return (
         <span>
 
-            <span onClick={handleOpen} style={{ cursor: 'pointer' }}>{props.children}</span>
+            <Tooltip title="Tap to Open">
+                <span onClick={handleOpen} style={{ cursor: 'pointer' }}>{props.children}</span>
+            </Tooltip>
 
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth='lg'>
 
                 <DialogTitle className='bg-dark text-white d-flex justify-content-between'>
                     <span>Image Preview</span>
-                    <IconButton onClick={handleClose}><Close sx={{color: 'white'}} /></IconButton>
+                    <IconButton onClick={handleClose}><Close sx={{ color: 'white' }} /></IconButton>
                 </DialogTitle>
 
                 <DialogContent className='bg-dark pb-4 d-flex align-items-center justify-content-center'>
