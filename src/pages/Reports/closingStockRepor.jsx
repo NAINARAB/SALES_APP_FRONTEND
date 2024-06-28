@@ -4,7 +4,7 @@ import '../common.css'
 import { api } from "../../host";
 
 // import { toast } from 'react-toastify';
-import { NumberFormat } from "../functions";
+import { NumberFormat, LocalDate } from "../functions";
 import { Add, Remove } from "@mui/icons-material";
 
 
@@ -27,6 +27,50 @@ const StockReportAreaBased = () => {
 
     const AreaList = ({ o, sno }) => {
         const [open, setOpen] = useState(false);
+        const [reportType, setReportType] = useState('RETAILER')
+
+        const dispContent = (val) => {
+            switch (val) {
+                case 'RETAILER':
+                    return (
+                        <table className="table mb-0">
+                            <thead>
+                                <tr>
+                                    {['', 'SNo', 'Retailer', 'Products', 'Value'].map((ret, ind) => (
+                                        <th key={ind} className="fa-14 border">{ret}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {o?.Retailer?.map((ret, ind) => <RetailerList o={ret} key={ind} sno={ind + 1} />)}
+                            </tbody>
+                        </table>
+                    )
+                case 'PRODUCT':
+                    return (
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    {['SNo', 'Product', 'Quantity', 'Value'].map((ret, ind) => (
+                                        <th key={ind} className="fa-14 border text-center">{ret}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {uniqueProductsWorth?.map((up, upi) => (
+                                    <tr key={upi}>
+                                        <td className="fa-13 border text-center">{upi + 1}</td>
+                                        <td className="fa-13 border">{up?.Product_Name}</td>
+                                        <td className="fa-13 border text-end">{NumberFormat(up?.totalQuantity)}</td>
+                                        <td className="fa-13 border text-end text-primary">{NumberFormat(up?.totalWorth)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )
+                default: <></>
+            }
+        }
 
         const areaValue = () => {
             let totalClosingStockValue = 0;
@@ -85,36 +129,85 @@ const StockReportAreaBased = () => {
                 <tr>
                     <td colSpan={5} className="p-0 border-0">
                         <Collapse in={open} timeout="auto" unmountOnExit>
-                            {/* <div className="table-responsive my-2">
-                                <table className="table mb-0">
-                                    <thead>
-                                        <tr>
-                                            {['', 'SNo', 'Retailer', 'Products', 'Value'].map((ret, ind) => (
-                                                <th key={ind} className="fa-14 border">{ret}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {o?.Retailer?.map((ret, ind) => <RetailerList o={ret} key={ind} sno={ind + 1} />)}
-                                    </tbody>
-                                </table>
-                            </div> */}
+
+                            <div className="my-3">
+                                <label className="w-100 mb-2 text-muted fw-bold">Report Type</label>
+                                <select
+                                    value={reportType}
+                                    onChange={e => setReportType(e.target.value)}
+                                    className="cus-inpt w-auto"
+                                >
+                                    <option value="RETAILER">RETAILER BASED</option>
+                                    <option value="PRODUCT">PRODUCT BASED</option>
+                                </select>
+                            </div>
+
+                            <div className="table-responsive my-2">
+                                {dispContent(reportType)}
+                            </div>
+                        </Collapse>
+                    </td>
+                </tr>
+            </>
+        )
+    }
+
+    const RetailerList = ({ o, sno }) => {
+        const [open, setOpen] = useState(false);
+
+        const overAllValue = () => {
+            let totalClosingStockValue = 0;
+
+            o?.Closing_Stock?.forEach(stock => {
+                totalClosingStockValue += stock?.Previous_Balance * stock?.Item_Rate;
+            })
+
+            return totalClosingStockValue;
+        };
+
+        return (
+            <>
+                <tr>
+                    <td>
+                        <IconButton size="small" onClick={() => setOpen(!open)}>
+                            {open ? <Remove sx={{ fontSize: '16px', color: 'red' }} /> : <Add sx={{ fontSize: '16px' }} />}
+                        </IconButton>
+                    </td>
+                    <td className="fa-13 border">{sno}</td>
+                    <td className="fa-13 border">
+                        <span className="fw-bold text-muted">{o?.Retailer_Name}</span> <br />
+                        <span className="fa-12 text-muted">{o?.Reatailer_Address}</span>
+                    </td>
+                    <td className="fa-13 border">{o?.Closing_Stock?.length}</td>
+                    <td className="fa-13 border">
+                        {NumberFormat(overAllValue())}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colSpan={5} className="p-0 border-0">
+                        <Collapse in={open} timeout="auto" unmountOnExit>
                             <div className="table-responsive my-2">
                                 <table className="table">
                                     <thead>
                                         <tr>
-                                            {['SNo', 'Product', 'Quantity', 'Value'].map((ret, ind) => (
-                                                <th key={ind} className="fa-14 border text-center">{ret}</th>
+                                            {['Sno', 'Product Name', 'Date', 'Quantity', 'Rate', 'Value'].map(o => (
+                                                <th className="fa-14 border text-center" key={o}>{o}</th>
+
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {uniqueProductsWorth?.map((up, upi) => (
-                                            <tr key={upi}>
-                                                <td className="fa-13 border text-center">{upi + 1}</td>
-                                                <td className="fa-13 border">{up?.Product_Name}</td>
-                                                <td className="fa-13 border text-end">{NumberFormat(up?.totalQuantity)}</td>
-                                                <td className="fa-13 border text-end text-primary">{NumberFormat(up?.totalWorth)}</td>
+                                        {o?.Closing_Stock?.map((pro, i) => (
+                                            <tr key={i}>
+                                                <td className="fa-14 border">{i + 1}</td>
+                                                <td className="fa-14 border">{pro?.Product_Name}</td>
+                                                <td className="fa-14 border text-center">{LocalDate(pro?.Cl_Date)}</td>
+                                                <td className="fa-14 border text-end">{NumberFormat(pro?.Previous_Balance)}</td>
+                                                <td className="fa-14 border text-end">{pro?.Item_Rate}</td>
+                                                <td className="fa-14 border text-end">
+                                                    {(pro?.Previous_Balance && pro?.Item_Rate) ? NumberFormat(pro?.Item_Rate * pro?.Previous_Balance) : 0}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -126,74 +219,6 @@ const StockReportAreaBased = () => {
             </>
         )
     }
-
-    // const RetailerList = ({ o, sno }) => {
-    //     const [open, setOpen] = useState(false);
-
-    //     const overAllValue = () => {
-    //         let totalClosingStockValue = 0;
-
-    //         o?.Closing_Stock?.forEach(stock => {
-    //             totalClosingStockValue += stock?.Previous_Balance * stock?.Item_Rate;
-    //         })
-
-    //         return totalClosingStockValue;
-    //     };
-
-    //     return (
-    //         <>
-    //             <tr>
-    //                 <td>
-    //                     <IconButton size="small" onClick={() => setOpen(!open)}>
-    //                         {open ? <Remove sx={{ fontSize: '16px', color: 'red' }} /> : <Add sx={{ fontSize: '16px' }} />}
-    //                     </IconButton>
-    //                 </td>
-    //                 <td className="fa-13 border">{sno}</td>
-    //                 <td className="fa-13 border">
-    //                     <span className="fw-bold text-muted">{o?.Retailer_Name}</span> <br />
-    //                     <span className="fa-12 text-muted">{o?.Reatailer_Address}</span>
-    //                 </td>
-    //                 <td className="fa-13 border">{o?.Closing_Stock?.length}</td>
-    //                 <td className="fa-13 border">
-    //                     {NumberFormat(overAllValue())}
-    //                 </td>
-    //             </tr>
-
-    //             <tr>
-    //                 <td colSpan={5} className="p-0 border-0">
-    //                     <Collapse in={open} timeout="auto" unmountOnExit>
-    //                         <div className="table-responsive my-2">
-    //                             <table className="table">
-    //                                 <thead>
-    //                                     <tr>
-    //                                         {['Sno', 'Product Name', 'Date', 'Quantity', 'Rate', 'Value'].map(o => (
-    //                                             <th className="fa-14 border text-center" key={o}>{o}</th>
-
-    //                                         ))}
-    //                                     </tr>
-    //                                 </thead>
-    //                                 <tbody>
-    //                                     {o?.Closing_Stock?.map((pro, i) => (
-    //                                         <tr key={i}>
-    //                                             <td className="fa-14 border">{i + 1}</td>
-    //                                             <td className="fa-14 border">{pro?.Product_Name}</td>
-    //                                             <td className="fa-14 border text-center">{LocalDate(pro?.Cl_Date)}</td>
-    //                                             <td className="fa-14 border text-end">{NumberFormat(pro?.Previous_Balance)}</td>
-    //                                             <td className="fa-14 border text-end">{pro?.Item_Rate}</td>
-    //                                             <td className="fa-14 border text-end">
-    //                                                 {(pro?.Previous_Balance && pro?.Item_Rate) ? NumberFormat(pro?.Item_Rate * pro?.Previous_Balance) : 0}
-    //                                             </td>
-    //                                         </tr>
-    //                                     ))}
-    //                                 </tbody>
-    //                             </table>
-    //                         </div>
-    //                     </Collapse>
-    //                 </td>
-    //             </tr>
-    //         </>
-    //     )
-    // }
 
     const overAllValue = (data) => {
         let totalClosingStockValue = 0;
